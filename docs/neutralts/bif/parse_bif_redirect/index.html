@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="{:redirect; … :}"><title>neutralts::bif::parse_bif_redirect - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-42caa33d.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="neutralts" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.1 (e71f9a9a9 2025-01-27)" data-channel="1.84.1" data-search-js="search-92e6798f.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../neutralts/index.html">neutralts</a><span class="version">1.2.10</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module parse_<wbr>bif_<wbr>redirect</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#redirect--" title="{:redirect; … :}">{:redirect; … :}</a><ul><li><a href="#modifiers" title="Modifiers:">Modifiers:</a></li><li><a href="#no-flags" title="No flags">No flags</a></li><li><a href="#redirect-http" title="Redirect HTTP">Redirect HTTP</a></li><li><a href="#redirect-javascript" title="Redirect Javascript">Redirect Javascript</a></li><li><a href="#manage-in-the-app-native-rust" title="Manage in the app (native Rust)">Manage in the app (native Rust)</a></li><li><a href="#manage-in-the-app-others" title="Manage in the app (others)">Manage in the app (others)</a></li></ul></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In neutralts::<wbr>bif</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../../index.html">neutralts</a>::<wbr><a href="../index.html">bif</a></span><h1>Module <span>parse_bif_redirect</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/neutralts/bif/parse_bif_redirect.rs.html#1-441">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="redirect--"><a class="doc-anchor" href="#redirect--">§</a>{:redirect; … :}</h2>
+<p>Terminate the current template with redirect status code or Javascript redirect.</p>
+<div class="example-wrap"><pre class="language-html"><code>{:redirect; 301 &gt;&gt; url :}
+{:redirect; js:reload:top :}</code></pre></div>
+<p>It is important to know that the <strong>status codes must be managed by the application</strong>, this bif is limited to set them and to terminate the template. In the case of JS redirections, a status code “200 OK” is set and does not need to be managed in the app.</p>
+<h3 id="modifiers"><a class="doc-anchor" href="#modifiers">§</a>Modifiers:</h3><div class="example-wrap"><pre class="language-html"><code>{:^redirect; ... :}</code></pre></div><h3 id="no-flags"><a class="doc-anchor" href="#no-flags">§</a>No flags</h3><h3 id="redirect-http"><a class="doc-anchor" href="#redirect-http">§</a>Redirect HTTP</h3>
+<p>The possible values for HTTP redirects are 301, 302, 303, 307 and 308 any other will generate an error. Redirect codes:</p>
+<div class="example-wrap"><pre class="language-html"><code>{
+    &quot;301&quot;: &quot;Moved Permanently&quot;,
+    &quot;302&quot;: &quot;Found&quot;,
+    &quot;303&quot;: &quot;See Other&quot;,
+    &quot;307&quot;: &quot;Temporary Redirect&quot;,
+    &quot;308&quot;: &quot;Permanent Redirect&quot;
+}
+
+{:redirect; 301 &gt;&gt; http://example.com :}
+{:redirect; 302 &gt;&gt; http://example.com :}
+{:redirect; 303 &gt;&gt; http://example.com :}
+{:redirect; 307 &gt;&gt; http://example.com :}
+{:redirect; 308 &gt;&gt; http://example.com :}</code></pre></div>
+<p>Custom redirections can also be created with the “exit” bif.</p>
+<h3 id="redirect-javascript"><a class="doc-anchor" href="#redirect-javascript">§</a>Redirect Javascript</h3>
+<p>In this case it is not necessary to do anything in the app.</p>
+<p>js:reload:top reloads the current page in the top window, no URL required:</p>
+<div class="example-wrap"><pre class="language-html"><code>{:redirect; js:reload:top :}</code></pre></div>
+<p>js:reload:self reloads the current page in the current window, no URL required:</p>
+<div class="example-wrap"><pre class="language-html"><code>{:redirect; js:reload:self :}</code></pre></div>
+<p>js:redirect:top redirects the page (URL) in the top window, requires the destination URL:</p>
+<div class="example-wrap"><pre class="language-html"><code>{:redirect; js:redirect;top &gt;&gt; /home/ :}</code></pre></div>
+<p>js:redirect:self redirects the page (URL) in the current window, requires the destination URL:</p>
+<div class="example-wrap"><pre class="language-html"><code>{:redirect; js:redirect;self &gt;&gt; /home/ :}</code></pre></div><h3 id="manage-in-the-app-native-rust"><a class="doc-anchor" href="#manage-in-the-app-native-rust">§</a>Manage in the app (native Rust)</h3>
+<p>If you use the bif “exit” or “redirect” it is necessary to manage the status codes in the application, it will depend on the environment or framework you are using, it could be something like this:</p>
+<div class="example-wrap"><pre class="language-text"><code>let template = Template::from_file_value(&quot;file.ntpl&quot;, schema).unwrap();
+let content = template.render();
+
+// e.g.: 301
+let status_code = template.get_status_code();
+
+// e.g.: Moved Permanently
+let status_text = template.get_status_text();
+
+// e.g.: https://example.com
+let status_param = template.get_status_param();
+
+// act accordingly at this point</code></pre></div>
+<p>It may be the case that the template contains a syntax error, in which case set the status code 500 and in the parameter the reason, by default the content is blank.</p>
+<h3 id="manage-in-the-app-others"><a class="doc-anchor" href="#manage-in-the-app-others">§</a>Manage in the app (others)</h3>
+<p>Each programming language can implement it in a different way, see the IPC client of each language.</p>
+<p>There will usually be an equivalent function with the same name as those in Rust.</p>
+<hr />
+</div></details></section></div></main></body></html>
