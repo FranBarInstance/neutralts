@@ -1,0 +1,62 @@
+{:*
+    home contents
+*:}
+
+{:*
+    Contents for Home
+*:}
+{:snippet; theme-contents >>
+            {:^;:} {:* <-- unnecessary, just for nice output *:}
+            <div class="page-header" id="title">
+                <div class="row">
+                    <h1>{:trans;
+
+                            {:*
+                                We can include comments anywhere and include whitespaces,
+                                the text will be translated and placed correctly.
+                            *:}
+                            {:;frameworks->{:;current-fw:}->title:}
+
+                    :}</h1>
+                    <p class="lead">{:trans; {:;site->description:} :}</p>
+                </div>
+            </div>
+            <div class="page-content" id="content">
+                <div class="row g-2">
+                    <div class="col-md-6 p-5">
+                        {:^data; {:flg; require :} >> #/../../../../plugins/build-form/form-example.json :}
+                        {:^include; #/../../../../plugins/build-form/snippets.ntpl :}
+
+                        {:^code;
+                            {:param; form-name >> local::form-example :}
+                            {:param; post-data >> POST :}
+
+                            {:snippet; neutral-build-form-parse :}
+                        :}
+                    </div>
+                    <div class="col-md-6 p-5">
+                        {:^data; {:flg; require :} >> #/../../../../plugins/build-form/form-login.json :}
+                        {:^include; #/../../../../plugins/build-form/snippets.ntpl :}
+
+                        {:^code;
+                            {:param; form-name >> local::form-example-login :}
+                            {:param; post-data >> POST :}
+
+                            {:snippet; neutral-build-form-parse :}
+                        :}
+                    </div>
+                </div>
+            </div>
+:}
+
+{:*
+    Disable menu-error
+
+*:}
+{:snippet; menu-error >> :}
+
+{:*
+    Foofer
+
+    The theme-footer snippet is left unset to load the default one.
+*:}

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Valid subdirectories
+is_hex_3chars() {
+    [[ $1 =~ ^[0-9a-fA-F]{3}$ ]]
+}
+
+# Check if a file has the correct format and if it has expired.
+is_expired() {
+    local filename=$(basename "$1")
+    if [[ $filename =~ ^[0-9a-fA-F]+-[0-9]+$ ]]; then
+        local expiration_seconds=${filename##*-}
+        local current_time=$(date +%s)
+        local file_mod_time=$(stat -c %Y "$1")
+        local file_age=$((current_time - file_mod_time))
+        [[ $file_age -ge $expiration_seconds ]]
+    else
+        return 1
+    fi
+}
+
+remove_trailing_slash() {
+  local dir="$1"
+  echo "$dir" | sed 's:/*$::'
+}
+
+base_dir=$(remove_trailing_slash "$1")
+
+if [[ "$base_dir" != *"neutral-cache"* ]]; then
+    echo "Invalid directory. For security reasons, it must contain 'neutral-cache' in its name."
+    exit 1
+fi
+
+echo "clean-cache start"
+
+for subdir in "$base_dir"/*; do
+    if [ -d "$subdir" ] && is_hex_3chars "$(basename "$subdir")"; then
+        for file in "$subdir"/*; do
+            if [ -f "$file" ] && is_expired "$file"; then
+                rm "$file"
+                echo "Expired file deleted: $file"
+            fi
+        done
+
+        if [ -z "$(ls -A "$subdir")" ]; then
+            rmdir "$subdir"
+            echo "Empty subdirectory deleted: $subdir"
+        fi
+    fi
+done
+
+echo "clean-cache end"

@@ -1,0 +1,47 @@
+{:*
+    Countries form field
+
+    Params:
+        select-prop   Select properties, id, class, ..., default none
+        option-prop   Select option properties, id, class, ..., default none
+*:}
+
+{:*
+    Generally the use of locale is {:locale; file.json :} but when it
+    comes to  translation of a few words you can use "inline".
+*:}
+{:locale; {:flg; inline :} >>
+    {
+        "trans": {
+            "es": {
+                "Select a country": "Selecciona un país"
+            },
+            "de": {
+                "Select a country": "Wählen Sie ein Land"
+            },
+            "fr": {
+                "Select a country": "Sélectionner un pays"
+            }
+        }
+    }
+:}
+
+{:*
+    Load data from current language or default "en"
+*:}
+{:!data;
+    #/countries.{:lang;:}.json
+:}{:+else;
+    {:!data; #/countries.en.json :}
+:}
+
+{:*
+   Create <select>
+*:}
+<select {:param; select-prop :}>
+    <option value="">{:trans; Select a country :}</option>
+    {:each; local::countries cod name >>
+        <option {:param; option-prop :} value="{:;cod:}">{:;name:}</option>
+    {:;:}  {:* <-- unnecessary, just for nice output *:}
+    :}
+</select>

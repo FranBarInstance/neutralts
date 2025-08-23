@@ -1,0 +1,60 @@
+
+
+{:*
+    On a 3000MHz server it should not take more than 30 milliseconds.
+*:}
+{:for; n 1 13 >>
+    {:include; {:flg; require :} >> tests/bench-snippets.ntpl :}
+    {:locale; {:flg; require :} >> tests/bench-locale.es.json :}
+    {:data; {:flg; require :} >> tests/local-data.json :}
+    {:;n:}
+    {:code;
+        <h2>Lorem ipsum</h2>
+        <p>
+            Sed euismod lacus eget metus tempor, sit amet auctor dolor faucibus. Nulla facilisi.
+            Quisque vitae ante et sem viverra hendrerit. Aliquam erat volutpat. Sed at
+            lectus ut justo interdum malesuada.
+        </p>
+    :}
+    {:^for; n 1 13 >>
+        {:;n:}
+        {:code;
+            <h2>Lorem ipsum</h2>
+            <p>
+                Sed euismod lacus eget metus tempor, sit amet auctor dolor faucibus. Nulla facilisi.
+                Quisque vitae ante et sem viverra hendrerit. Aliquam erat volutpat. Sed at
+                lectus ut justo interdum malesuada.
+            </p>
+        :}
+        <div>{:;__test-nts:}</div>
+        {:!trans; A detailed description of Service 2 that offers advanced services and support. :}
+        {:^;:}<div1></div1>
+        {:^;:}{:^date; %S :}
+        {:^;:}{:join; /__test-arr-nts/|/ :}
+        {:^;:}{:;__hello-nts:}
+        {:^;:}{:allow; _test-nts >> {:;__hello-nts:} :}
+        {:^;:}{:!allow; _test-nts >> {:;__hello-nts:} :}
+        {:^;:}{:array; __test-arr-nts >> {:each; __test-arr-nts k v >> {:;k:}{:;v:} :} :}
+        {:^;:}{:!array; __test-arr-nts >> {:each; __test-arr-nts k v >> {:;k:}{:;v:} :} :}
+        {:^;:}{:bool; true >> true :}
+        {:^;:}{:!bool; true >> true :}
+        {:^;:}{:coalesce; {:;empty:}{:;__hello-nts:} :}
+        {:^;:}{:code; {:param; {:;__hello-nts:} >> {:;__hello-nts:} :} {:coalesce; {:;empty:}{:param; {:;__hello-nts:} :} :} :}
+        {:^;:}{:contains; /haystack/st/ >> contains :}
+        {:^;:}{:defined; __test-nts >> is defined :}
+        {:^;:}{:!defined; __test-nts >> is defined :}
+        {:^;:}{:code;  :}{:else; else :}
+        {:^;:}{:eval; {:;__test-nts:} >> {:;__eval__:} :}
+        {:^;:}{:filled; __test-nts >> is filled :}
+        {:^;:}{:!filled; __test-nts >> is filled :}
+        {:^;:}{:for; n 0 9 >> {:;n:} :}
+        {:^;:}{:hash; {:;__test-nts:} :}
+        {:^;:}{:lang; :}
+        {:^;:}{:moveto; <div1 >> 1{:;__test-nts:} :}
+        {:^;:}{:neutral; {:;__test-nts:} >> {:;__test-nts:} :}
+        {:^;:}{:rand; 1..1 :}
+        {:^;:}{:replace; /{:;__test-nts:}/{:;__test-arr-nts->0:}/ >> {:;__hello-nts:} :}
+        {:^;:}{:same; /{:;__test-nts:}/{:;__test-nts:}/ >> {:;__test-nts:} :}
+        {:^;:}{:trans; {:trans; Hello nts :} :}
+    :}
+:}

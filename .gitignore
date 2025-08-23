@@ -1,0 +1,8 @@
+**/target
+/pruebas
+.directory
+.vscode
+/src/main.rs
+/helpers
+__pycache__/
+*.py[cod]

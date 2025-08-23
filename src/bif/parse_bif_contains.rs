@@ -1,0 +1,119 @@
+#![doc = include_str!("../../doc/bif-contains.md")]
+
+use crate::{bif::Bif, bif::BifError, constants::*};
+
+impl<'a> Bif<'a> {
+    /*
+        {:contains; /haystack/needle/ >> ... :}
+    */
+    pub(crate) fn parse_bif_contains(&mut self) -> Result<(), BifError> {
+        if self.mod_filter {
+            return Err(BifError {
+                msg: "modifier not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
+        self.extract_params_code(false);
+        let args = self.extract_args();
+
+        let haystack = args.get(1).cloned().ok_or_else(|| BifError {
+            msg: "arguments not found".to_string(),
+            name: self.alias.clone(),
+            src: self.raw.to_string(),
+        })?;
+
+        let needle = args.get(2).cloned().ok_or_else(|| BifError {
+            msg: "arguments not found".to_string(),
+            name: self.alias.clone(),
+            src: self.raw.to_string(),
+        })?;
+
+        if haystack.contains(&needle) ^ self.mod_negate {
+            if self.code.contains(BIF_OPEN) {
+                self.code = new_child_parse!(self, &self.code, self.mod_scope);
+            }
+            self.out = self.code.to_string();
+        } else {
+            self.out = EMPTY_STRING;
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::test_helpers::*;
+
+    #[test]
+    fn test_bif_contains() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:contains; /haystack/st/ >> contains :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>contains</div>");
+    }
+
+    #[test]
+    fn test_bif_no_contains() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:contains; /haystack/none/ >> contains :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
+    #[test]
+    fn test_bif_no_contains_negate() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:!contains; /haystack/none/ >> not contains :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>not contains</div>");
+    }
+
+    #[test]
+    fn test_bif_contains_evaluate() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(
+            "<div>{:contains; /{:;__test-nts:}/{:;__test-nts:}/ >> {:;__test-nts:} :}</div>",
+        );
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>nts</div>");
+    }
+}

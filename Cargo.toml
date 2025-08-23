@@ -1,0 +1,21 @@
+[package]
+name = "neutralts"
+description = "Neutral TS template engine is a web template designed to work with any programming language via IPC and natively as library/crate in Rust."
+license = "Apache-2.0"
+version = "1.2.10"
+edition = "2021"
+homepage = "https://gitlab.com/neutralfw"
+repository = "https://gitlab.com/neutralfw/neutralts"
+documentation = "https://docs.rs/neutralts/latest/neutralts/"
+keywords = ["web", "template", "engine", "templating", "handlebars"]
+categories = ["template-engine", "web-programming"]
+
+[dependencies]
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = { version = "1.0.138", features = ["preserve_order"] }
+regex = "1.5.4"
+sha2 = "0.10.8"
+chrono = "0.4"
+md-5 = "0.10"
+rand = "0.9.0"
+lazy_static = "1.5.0"
