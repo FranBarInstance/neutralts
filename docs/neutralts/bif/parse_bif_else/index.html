@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="{:else; … :}"><title>neutralts::bif::parse_bif_else - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-42caa33d.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="neutralts" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.1 (e71f9a9a9 2025-01-27)" data-channel="1.84.1" data-search-js="search-92e6798f.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../neutralts/index.html">neutralts</a><span class="version">1.2.10</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module parse_<wbr>bif_<wbr>else</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#else--" title="{:else; … :}">{:else; … :}</a><ul><li><a href="#modifiers" title="Modifiers:">Modifiers:</a></li><li><a href="#no-flags" title="No flags">No flags</a></li><li><a href="#nesting" title="Nesting">Nesting</a></li><li><a href="#usage" title="Usage">Usage</a></li></ul></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In neutralts::<wbr>bif</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../../index.html">neutralts</a>::<wbr><a href="../index.html">bif</a></span><h1>Module <span>parse_bif_else</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/neutralts/bif/parse_bif_else.rs.html#1-109">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="else--"><a class="doc-anchor" href="#else--">§</a>{:else; … :}</h2>
+<p>Output code if the output of the above bif called is empty (zero length).</p>
+<div class="example-wrap"><pre class="language-text"><code>{:else; code :}
+
+{:;varname:}{:else; shown if varname is empty :}</code></pre></div><h3 id="modifiers"><a class="doc-anchor" href="#modifiers">§</a>Modifiers:</h3><div class="example-wrap"><pre class="language-text"><code>{:^else; ... :}
+{:!else; ... :}</code></pre></div><h4 id="modifier--upline"><a class="doc-anchor" href="#modifier--upline">§</a>Modifier: ^ (upline)</h4>
+<p>Eliminates previous whitespaces, (See “unprintable” for examples.)</p>
+<h4 id="modifier--not"><a class="doc-anchor" href="#modifier--not">§</a>Modifier: ! (not)</h4><div class="example-wrap"><pre class="language-text"><code>{:;varname:}{:!else; shown if varname is not empty :}</code></pre></div><h3 id="no-flags"><a class="doc-anchor" href="#no-flags">§</a>No flags</h3><h3 id="nesting"><a class="doc-anchor" href="#nesting">§</a>Nesting</h3>
+<p>Can be nested (no limit):</p>
+<div class="example-wrap"><pre class="language-text"><code>{:code; ... :}
+{:else;
+    {:;varname:}{:else; ... :}
+:}</code></pre></div>
+<p>Grouping:</p>
+<div class="example-wrap"><pre class="language-text"><code>{:code;
+    {:;foor:}
+    {:;bar:}
+:}{:else;
+    foo and bar are empty
+:}</code></pre></div>
+<p>Can be chained, the following is possible:</p>
+<div class="example-wrap"><pre class="language-text"><code>{:code;
+    {:;foor:}
+    {:;bar:}
+:}{:else;
+    foo and bar are empty
+:}{:else;
+    {:* if previous &quot;else&quot; is empty *:}
+    foo or bar are not empty
+:}</code></pre></div><h3 id="usage"><a class="doc-anchor" href="#usage">§</a>Usage</h3>
+<p>Unpredictable results if not immediately after another bif, for example at the beginning of a template. Some bifs always return an empty string, so it doesn’t make much sense to add “else” after.</p>
+<div class="example-wrap"><pre class="language-text"><code>{:moveto; ... :}
+{:else; moveto always outputs an empty string :}</code></pre></div><div class="example-wrap"><pre class="language-text"><code>{:param: ... :}
+{:else; param always outputs an empty string :}</code></pre></div>
+<p>Regardless of the result of an expression, but the output of the block, in this example it does not matter if varname is defined, but if the block it returns is empty or not:</p>
+<div class="example-wrap"><pre class="language-text"><code>{:defined; varname &gt;&gt; {:* void *:} :}
+{:else;
+    The previous block is empty,
+    but I don&#39;t know what happened to varname
+:}</code></pre></div>
+<p>For a construction taking into account the result of the expression, you can do this other:</p>
+<div class="example-wrap"><pre class="language-text"><code>{:defined; varname &gt;&gt; ... :}
+{:!defined; varname &gt;&gt; ... :}</code></pre></div>
+<p>Only the output of the last bif is relevant, it does not matter if there is something else in between. Next is the same:</p>
+<div class="example-wrap"><pre class="language-text"><code>{:code;
+    {:;foor:}
+    {:;bar:}
+:}{:else;
+    foo and bar are empty
+:}</code></pre></div><div class="example-wrap"><pre class="language-text"><code>{:code;
+    {:;foor:}
+    {:;bar:}
+:}
+&lt;div&gt;
+    ...
+&lt;/div&gt;
+{:else;
+    foo and bar are empty
+:}</code></pre></div>
+<p>But the second way will be confusing.</p>
+<hr />
+</div></details></section></div></main></body></html>
