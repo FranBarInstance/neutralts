@@ -63,8 +63,6 @@ mod macros {
 
             // Update this block with the data generated in the child
             if $scope {
-                // el código que estaba aquí lo he movido a la función
-                // update_indir para evitar un error de prestamo.
                 block.update_indir(&$self.inherit.indir);
             }
 
