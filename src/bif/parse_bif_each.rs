@@ -141,4 +141,39 @@ mod tests {
         "<div>\n        level1=Ok\n        level1-obj:\n                level1=Ok\n                level2-obj:\n                        level2=Ok\n                        level3-arr:\n                                0=one\n                                1=two\n                                2=three</div>"
     );
     }
+
+    #[test]
+    fn test_bif_each_no_scope() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:each; __test-arr-nts key val >> {:include; tests/snippets.ntpl :} :}{:snippet; test-snippet :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
+    #[test]
+    fn test_bif_each_scope() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:+each; __test-arr-nts key val >> {:include; tests/snippets.ntpl :} :}{:snippet; test-snippet :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div><div>test snippet</div></div>");
+    }
+
 }
