@@ -9,7 +9,7 @@ impl<'a> Bif<'a> {
        :}
     */
     pub(crate) fn parse_bif_for(&mut self) -> Result<(), BifError> {
-        if self.mod_filter || self.mod_negate || self.mod_scope {
+        if self.mod_filter || self.mod_negate {
             return Err(BifError {
                 msg: "modifier not allowed".to_string(),
                 name: self.alias.clone(),

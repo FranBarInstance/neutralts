@@ -17,8 +17,11 @@ Modifiers:
 ----------
 
 ```html
+{:+each; ... :}
 {:^each; ... :}
 ```
+
+For more details about the "+" modifier see "modifiers".
 
 No flags
 --------

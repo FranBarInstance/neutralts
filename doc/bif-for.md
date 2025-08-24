@@ -15,8 +15,11 @@ Modifiers:
 ----------
 
 ```html
+{:+for; ... :}
 {:^for; ... :}
 ```
+
+For more details about the "+" modifier see "modifiers".
 
 No flags
 --------

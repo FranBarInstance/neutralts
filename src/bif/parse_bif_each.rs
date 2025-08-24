@@ -9,7 +9,7 @@ impl<'a> Bif<'a> {
         :}
     */
     pub(crate) fn parse_bif_each(&mut self) -> Result<(), BifError> {
-        if self.mod_filter || self.mod_negate || self.mod_scope {
+        if self.mod_filter || self.mod_negate {
             return Err(BifError {
                 msg: "modifier not allowed".to_string(),
                 name: self.alias.clone(),
@@ -97,7 +97,7 @@ impl<'a> Bif<'a> {
     ) {
         self.shared.schema["data"][key_name] = json!(key);
         self.shared.schema["data"][val_name] = json!(val);
-        self.out += &new_child_parse!(self, &self.code, false);
+        self.out += &new_child_parse!(self, &self.code, self.mod_scope);
     }
 }
 
