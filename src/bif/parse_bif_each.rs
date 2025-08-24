@@ -88,7 +88,7 @@ impl<'a> Bif<'a> {
         Ok(())
     }
 
-    pub(crate) fn parse_bif_each_iter(
+    fn parse_bif_each_iter(
         &mut self,
         key_name: &str,
         val_name: &str,
