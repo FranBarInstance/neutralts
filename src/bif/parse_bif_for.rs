@@ -223,9 +223,26 @@ mod tests {
             }
         };
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:+for; n 0 9 >> {:;n:} :}</div>");
+        template.set_src_str("<div>{:for; n 1..1 >> {:include; tests/snippets.ntpl :} :}{:snippet; test-snippet :}</div>");
         let result = template.render();
-        assert!(template.has_error());
+        assert!(!template.has_error());
         assert_eq!(result, "<div></div>");
+    }
+
+    #[test]
+    fn test_bif_for_scope() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:+for; n 1..1 >> {:include; tests/snippets.ntpl :} :}{:snippet; test-snippet :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div><div>test snippet</div></div>");
     }
 }
