@@ -149,7 +149,34 @@
 <a href="#148" id="148">148</a>
 <a href="#149" id="149">149</a>
 <a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a></pre></div><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">"../../doc/bif-replace.md"</span>)]
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a></pre></div><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">"../../doc/bif-replace.md"</span>)]
 
 </span><span class="kw">use crate</span>::{bif::Bif, bif::BifError, constants::<span class="kw-2">*</span>};
 
@@ -168,6 +195,15 @@
         }
 
         <span class="self">self</span>.extract_params_code(<span class="bool-val">false</span>);
+
+        <span class="kw">if </span><span class="self">self</span>.params.contains(<span class="string">"{:flg;"</span>) {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(BifError {
+                msg: <span class="string">"flags not allowed"</span>.to_string(),
+                name: <span class="self">self</span>.alias.clone(),
+                src: <span class="self">self</span>.raw.to_string(),
+            });
+        }
+
         <span class="kw">let </span>args = <span class="self">self</span>.extract_args();
 
         <span class="kw">let </span>from = args.get(<span class="number">1</span>).cloned().ok_or_else(|| BifError {
@@ -299,5 +335,23 @@
         <span class="macro">assert!</span>(template.has_error());
         <span class="macro">assert_eq!</span>(result, <span class="string">"&lt;div&gt;&lt;/div&gt;"</span>);
     }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_bif_replace_invalid_flag() {
+        <span class="kw">let </span><span class="kw-2">mut </span>template = <span class="kw">match </span><span class="kw">crate</span>::Template::new() {
+            <span class="prelude-val">Ok</span>(tpl) =&gt; tpl,
+            <span class="prelude-val">Err</span>(error) =&gt; {
+                <span class="macro">println!</span>(<span class="string">"Error creating Template: {}"</span>, error);
+                <span class="macro">assert!</span>(<span class="bool-val">false</span>);
+                <span class="kw">return</span>;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(<span class="string">"&lt;div&gt;{:replace; {:flg; invalid_flag :} /a/b/ &gt;&gt; acbde :}&lt;/div&gt;"</span>);
+        <span class="kw">let </span>result = template.render();
+        <span class="macro">assert!</span>(template.has_error());
+        <span class="macro">assert_eq!</span>(result, <span class="string">"&lt;div&gt;&lt;/div&gt;"</span>);
+    }
+
 }
 </code></pre></div></section></main></body></html>

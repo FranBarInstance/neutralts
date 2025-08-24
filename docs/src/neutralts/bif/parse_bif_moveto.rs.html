@@ -344,7 +344,15 @@
 <a href="#343" id="343">343</a>
 <a href="#344" id="344">344</a>
 <a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a></pre></div><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">"../../doc/bif-moveto.md"</span>)]
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a></pre></div><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">"../../doc/bif-moveto.md"</span>)]
 
 </span><span class="kw">use crate</span>::{bif::Bif, bif::BifError, constants::<span class="kw-2">*</span>, json};
 <span class="kw">use </span>md5::{Digest, Md5};
@@ -370,6 +378,14 @@
         }
 
         <span class="self">self</span>.extract_params_code(<span class="bool-val">true</span>);
+
+        <span class="kw">if </span>!<span class="self">self</span>.flags.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(BifError {
+                msg: <span class="string">"flags not allowed"</span>.to_string(),
+                name: <span class="self">self</span>.alias.clone(),
+                src: <span class="self">self</span>.raw.to_string(),
+            });
+        }
 
         <span class="kw">if </span><span class="self">self</span>.code.contains(BIF_OPEN) {
             <span class="self">self</span>.code = <span class="macro">new_child_parse!</span>(<span class="self">self</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.code, <span class="self">self</span>.mod_scope);
