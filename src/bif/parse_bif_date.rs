@@ -19,6 +19,14 @@ impl<'a> Bif<'a> {
 
         self.extract_params_code(true);
 
+        if !self.flags.is_empty() {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         let now = Utc::now();
 
         if self.src.contains(BIF_OPEN) {
@@ -86,4 +94,22 @@ mod tests {
         assert!(!template.has_error());
         assert!(!is_valid_rfc3339(&result));
     }
+
+    #[test]
+    fn test_bif_date_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("{:date; {:flg; invalid_flag :} >> %Y-%m-%d %H:%M:%S :}");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "");
+    }
+
 }

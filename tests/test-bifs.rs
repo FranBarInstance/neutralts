@@ -346,7 +346,6 @@ fn test_bif_complete_tpl() {
             </div>
             <div>
                 is not traversal
-                is traversal!
             </div>
             <div>
                     num 0 = 0

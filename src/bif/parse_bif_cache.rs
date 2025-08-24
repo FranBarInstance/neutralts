@@ -27,6 +27,14 @@ impl<'a> Bif<'a> {
 
         self.extract_params_code(false);
 
+        if self.params.contains("{:flg;") {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         if self.mod_negate {
             if self.inherit.in_cache {
                 self.out = self.raw.to_string();
@@ -779,4 +787,25 @@ mod tests {
         assert!(!template.has_error());
         assert_eq!(result, expected);
     }
+
+
+    #[test]
+    fn test_bif_cache_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        let src = "<div>{:cache; {:flg; invalid_flag :} /3/ >> nts :}</div>";
+
+        template.set_src_str(src);
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
 }

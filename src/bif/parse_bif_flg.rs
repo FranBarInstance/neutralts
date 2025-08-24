@@ -18,6 +18,14 @@ impl<'a> Bif<'a> {
 
         self.extract_params_code(true);
 
+        if !self.flags.is_empty() {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         if self.code.contains(BIF_OPEN) {
             self.code = new_child_parse!(self, &self.code, false);
         }
@@ -50,4 +58,22 @@ mod tests {
         assert!(!template.has_error());
         assert_eq!(result, "<div></div>");
     }
+
+    #[test]
+    fn test_bif_flg_no_flags() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:flg; {:flg; any :} any >> :}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
 }

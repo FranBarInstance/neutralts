@@ -20,6 +20,14 @@ impl<'a> Bif<'a> {
 
         self.extract_params_code(true);
 
+        if !self.flags.is_empty() {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         let mut varname = self.params.as_str();
         let mut schema = &self.shared.schema["data"];
 
@@ -1382,4 +1390,22 @@ mod tests {
         assert!(!template.has_error());
         assert_eq!(result, "<div>is not filled</div>");
     }
+
+    #[test]
+    fn test_bif_filled_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:filled; {:flg; invalid_flag :} __test-nts >> is filled :}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
 }

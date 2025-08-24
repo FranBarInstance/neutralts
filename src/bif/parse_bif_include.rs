@@ -1,5 +1,6 @@
 #![doc = include_str!("../../doc/bif-include.md")]
 
+use std::collections::HashSet;
 use crate::{bif::Bif, bif::BifError, constants::*, utils::*};
 use std::fs;
 use std::path::Path;
@@ -19,6 +20,25 @@ impl<'a> Bif<'a> {
         }
 
         self.extract_params_code(true);
+
+        if !self.flags.is_empty() {
+            let flags_allowed: HashSet<&str> = [
+                "require",
+                "safe",
+                "noparse"
+            ].into_iter().collect();
+
+            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
+                if !flags_allowed.contains(f) {
+                    return Err(BifError {
+                        msg: format!("{} flag not allowed", f),
+                        name: self.alias.clone(),
+                        src: self.raw.to_string(),
+                    });
+                }
+            }
+        }
+
         self.file_path = self.code.clone();
 
         // For security requires {:allow;
@@ -274,4 +294,22 @@ mod tests {
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
     }
+
+    #[test]
+    fn test_bif_include_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:include; {:flg; invalid_flag :} >> tests/include-snippets.ntpl :}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
 }

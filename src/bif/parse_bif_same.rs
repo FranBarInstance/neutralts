@@ -16,6 +16,15 @@ impl<'a> Bif<'a> {
         }
 
         self.extract_params_code(false);
+
+        if self.params.contains("{:flg;") {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         let args = self.extract_args();
 
         let param1 = args.get(1).cloned().ok_or_else(|| BifError {
@@ -116,4 +125,22 @@ mod tests {
         assert!(!template.has_error());
         assert_eq!(result, "<div>nts</div>");
     }
+
+    #[test]
+    fn test_bif_same_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:same; {:flg; invalid_flag :} /a/a/ >> is same :}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
 }

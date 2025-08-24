@@ -1,0 +1,3 @@
+{:declare; {:flg; invalid_flag :} test-for-tests >>
+    one two three
+:}

@@ -26,6 +26,14 @@ impl<'a> Bif<'a> {
 
         let has_status_params = self.extract_params_code(true);
 
+        if !self.flags.is_empty() {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         if self.code.contains(BIF_OPEN) {
             self.code = new_child_parse!(self, &self.src, false);
         }
@@ -381,5 +389,22 @@ mod tests {
         assert_eq!(template.get_status_text(), "Service Unavailable");
         assert_eq!(template.get_status_param(), "");
         assert_eq!(result, "503 Service Unavailable");
+    }
+
+    #[test]
+    fn test_bif_exit_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:exit; {:flg; invalid_flag :} 302 >> /home :}</div>");
+        let _result = template.render();
+        assert!(template.has_error());
+        assert_eq!(template.get_status_code(), "200");
     }
 }

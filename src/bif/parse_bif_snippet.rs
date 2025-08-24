@@ -1,5 +1,6 @@
 #![doc = include_str!("../../doc/bif-snippet.md")]
 
+use std::collections::HashSet;
 use crate::{bif::Bif, bif::BifError, constants::*, json, utils::*};
 
 impl<'a> Bif<'a> {
@@ -24,6 +25,24 @@ impl<'a> Bif<'a> {
         self.alias = "snippet".to_string();
 
         let is_set = self.extract_params_code(true);
+
+        if !self.flags.is_empty() {
+            let flags_allowed: HashSet<&str> = [
+                "static"
+            ].into_iter().collect();
+
+            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
+                if !flags_allowed.contains(f) {
+                    return Err(BifError {
+                        msg: format!("{} flag not allowed", f),
+                        name: self.alias.clone(),
+                        src: self.raw.to_string(),
+                    });
+                }
+            }
+        }
+
+
         if is_set {
             // Set snippets in snippet files and inside snippets
             if self.inherit.current_file.contains(SNIPPETS_FILES) || self.inherit.alias == "snippet"

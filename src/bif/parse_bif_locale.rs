@@ -1,5 +1,6 @@
 #![doc = include_str!("../../doc/bif-locale.md")]
 
+use std::collections::HashSet;
 use crate::{bif::Bif, bif::BifError, constants::*, utils::*, Value};
 use std::fs;
 use std::path::Path;
@@ -18,6 +19,24 @@ impl<'a> Bif<'a> {
         }
 
         self.extract_params_code(true);
+
+        if !self.flags.is_empty() {
+            let flags_allowed: HashSet<&str> = [
+                "inline",
+                "require",
+                "noparse"
+            ].into_iter().collect();
+
+            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
+                if !flags_allowed.contains(f) {
+                    return Err(BifError {
+                        msg: format!("{} flag not allowed", f),
+                        name: self.alias.clone(),
+                        src: self.raw.to_string(),
+                    });
+                }
+            }
+        }
 
         if self.flags.contains("|inline|") {
             // Parse possible bifs included in json
@@ -422,4 +441,33 @@ mod tests {
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
     }
+
+    #[test]
+    fn test_bif_locale_invalid_flag() {
+        let schema = r#"
+    {
+        "inherit": {
+            "locale": {
+                "current": "es"
+            }
+        }
+    }
+    "#
+        .trim();
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.merge_schema_str(schema).unwrap();
+        template.set_src_str("<div>{:locale; {:flg; invalid_flag :} >> tests/locale.es.json :}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
 }

@@ -51,7 +51,6 @@
             </div>
             <div>
                 {:!allow; traversal >> is not traversal :}{:else; not else :}
-                {:!allow; {:flg; noerror :} traversal >> ../istraversal :}{:else; is traversal! :}
             </div>
             <div>
                 {:for; n 0 9 >>

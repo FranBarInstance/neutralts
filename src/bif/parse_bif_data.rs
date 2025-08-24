@@ -1,5 +1,6 @@
 #![doc = include_str!("../../doc/bif-data.md")]
 
+use std::collections::HashSet;
 use crate::{bif::Bif, bif::BifError, constants::*, utils::*, Value};
 use std::fs;
 use std::path::Path;
@@ -18,6 +19,23 @@ impl<'a> Bif<'a> {
         }
 
         self.extract_params_code(true);
+
+        if !self.flags.is_empty() {
+            let flags_allowed: HashSet<&str> = [
+                "inline",
+                "require"
+            ].into_iter().collect();
+
+            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
+                if !flags_allowed.contains(f) {
+                    return Err(BifError {
+                        msg: format!("{} flag not allowed", f),
+                        name: self.alias.clone(),
+                        src: self.raw.to_string(),
+                    });
+                }
+            }
+        }
 
         if self.flags.contains("|inline|") {
             let data: Value = match serde_json::from_str(&self.code) {
@@ -226,4 +244,39 @@ mod tests {
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
     }
+
+    #[test]
+    fn test_bif_data_inline() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:data; {:flg; inline :} >> { \"data\": { \"hello\": \"local hello\" } } :}{:;local::hello:}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>local hello</div>");
+    }
+
+    #[test]
+    fn test_bif_data_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:data; {:flg; invalid_flag :} >> tests/local-data.json :}{:;local::hello:}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
 }

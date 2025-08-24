@@ -1,7 +1,7 @@
 {:flg; ... :}
 =============
 
-Set a flag for a bif.
+Set a flag for a bif. It is case sensitive.
 
 ```html
 {:flg; flag1 flag2 ... :}

@@ -17,6 +17,14 @@ impl<'a> Bif<'a> {
 
         self.extract_params_code(false);
 
+        if self.params.contains("{:flg;") {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         if self.params.contains(BIF_OPEN) {
             self.params = new_child_parse!(self, &self.params, self.mod_scope);
         }
@@ -181,5 +189,22 @@ mod tests {
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div><div>test snippet</div></div>");
+    }
+
+    #[test]
+    fn test_bif_eval_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:eval; {:flg; invalid_flag :} a >> b :}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
     }
 }

@@ -327,8 +327,8 @@ fn test_bif_inject_cache_true_code_flags() {
     template.merge_schema_str(SCHEMA).unwrap();
     template.set_src_str("<div>{:code; {:flg; {:;inject:} :} >> {:;inject:} :}</div>");
     let result = template.render();
-    assert!(!template.has_error());
-    assert_eq!(result, "<div>{:exit; 403 :}</div>");
+    assert!(template.has_error());
+    assert_eq!(result, "<div></div>");
 }
 
 #[test]
@@ -684,7 +684,7 @@ fn test_bif_inject_cache_true_include_flags() {
     template.merge_schema_str(SCHEMA).unwrap();
     template.set_src_str("<div>{:!include; {:flg; {:;inject:} :} >> foo-{:;inject:} :}</div>");
     let result = template.render();
-    assert!(!template.has_error());
+    assert!(template.has_error());
     assert_eq!(result, "<div></div>");
 }
 
@@ -752,7 +752,7 @@ fn test_bif_inject_cache_true_locale_flags() {
     template.merge_schema_str(SCHEMA).unwrap();
     template.set_src_str("<div>{:!locale; {:flg; {:;inject:} :} >> foo-{:;inject:} :}</div>");
     let result = template.render();
-    assert!(!template.has_error());
+    assert!(template.has_error());
     assert_eq!(result, "<div></div>");
 }
 

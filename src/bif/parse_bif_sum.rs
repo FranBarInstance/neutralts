@@ -16,6 +16,15 @@ impl<'a> Bif<'a> {
         }
 
         self.params = self.src.clone();
+
+        if self.params.contains("{:flg;") {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         let args = self.extract_args();
 
         let param1_str = args.get(1).cloned().ok_or_else(|| BifError {

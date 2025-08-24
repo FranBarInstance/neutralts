@@ -1,6 +1,12 @@
 #![doc = include_str!("../../doc/bif-allow.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*, utils::*};
+use std::collections::HashSet;
+use crate::{
+    bif::Bif,
+    bif::BifError,
+    constants::*,
+    utils::*
+};
 
 impl<'a> Bif<'a> {
     /*
@@ -28,6 +34,24 @@ impl<'a> Bif<'a> {
                 name: self.alias.clone(),
                 src: self.raw.to_string(),
             });
+        }
+
+        if !self.flags.is_empty() {
+            let flags_allowed: HashSet<&str> = [
+                "partial",
+                "replace",
+                "casein"
+            ].into_iter().collect();
+
+            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
+                if !flags_allowed.contains(f) {
+                    return Err(BifError {
+                        msg: format!("{} flag not allowed", f),
+                        name: self.alias.clone(),
+                        src: self.raw.to_string(),
+                    });
+                }
+            }
         }
 
         let mut words_list: Vec<&str> = words_string.split_whitespace().collect();
@@ -383,23 +407,6 @@ mod tests {
     }
 
     #[test]
-    fn test_bif_allow_flag_noerror() {
-        let mut template = match crate::Template::new() {
-            Ok(tpl) => tpl,
-            Err(error) => {
-                println!("Error creating Template: {}", error);
-                assert!(false);
-                return;
-            }
-        };
-        template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:allow;{:flg; noerror :} _test-nts >> nts and more :}</div>");
-        let result = template.render();
-        assert!(!template.has_error());
-        assert_eq!(result, "<div></div>");
-    }
-
-    #[test]
     fn test_bif_allow_multi_flags() {
         let mut template = match crate::Template::new() {
             Ok(tpl) => tpl,
@@ -415,4 +422,39 @@ mod tests {
         assert!(!template.has_error());
         assert_eq!(result, "<div>nts</div>");
     }
+
+    #[test]
+    fn test_bif_allow_valid_flags() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:allow; {:flg; partial replace casein :} _test-nts >> nts and more :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>nts</div>");
+    }
+
+    #[test]
+    fn test_bif_allow_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:allow; {:flg; invalid_flag :} _test-nts >> nts and more :}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
 }

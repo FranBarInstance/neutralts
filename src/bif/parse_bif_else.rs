@@ -19,6 +19,14 @@ impl<'a> Bif<'a> {
 
         self.extract_params_code(true);
 
+        if !self.flags.is_empty() {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         if self.inherit.last_bif_out ^ self.mod_negate {
             self.out = EMPTY_STRING;
 

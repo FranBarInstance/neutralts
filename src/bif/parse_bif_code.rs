@@ -1,5 +1,6 @@
 #![doc = include_str!("../../doc/bif-code.md")]
 
+use std::collections::HashSet;
 use crate::{bif::Bif, bif::BifError, constants::*, utils::*};
 
 impl<'a> Bif<'a> {
@@ -17,6 +18,26 @@ impl<'a> Bif<'a> {
         }
 
         self.extract_params_code(true);
+
+            if !self.flags.is_empty() {
+            let flags_allowed: HashSet<&str> = [
+                "safe",
+                "encode_tags",
+                "encode_bifs",
+                "noparse",
+                "encode_tags_after"
+            ].into_iter().collect();
+
+            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
+                if !flags_allowed.contains(f) {
+                    return Err(BifError {
+                        msg: format!("{} flag not allowed", f),
+                        name: self.alias.clone(),
+                        src: self.raw.to_string(),
+                    });
+                }
+            }
+        }
 
         if self.flags.contains("|safe|") {
             self.code = escape_chars(&unescape_chars(&self.code, false), false).to_string();
@@ -212,4 +233,42 @@ mod tests {
         assert!(!template.has_error());
         assert_eq!(result, "<div><div>test snippet</div></div>");
     }
+
+    #[test]
+    fn test_bif_code_flag_allowed() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:code; {:flg; safe noparse encode_tags encode_tags_after encode_bifs :} >> nts :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(
+            result,
+            "<div>nts</div>"
+        );
+    }
+
+    #[test]
+    fn test_bif_code_flag_not_allowed() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:code; {:flg; invalid_flag :} >> nts :}</div>");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result,"<div></div>");
+    }
+
 }

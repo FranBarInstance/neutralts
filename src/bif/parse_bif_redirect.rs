@@ -25,6 +25,14 @@ impl<'a> Bif<'a> {
         let status_code;
         let has_status_params = self.extract_params_code(true);
 
+        if !self.flags.is_empty() {
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
+        }
+
         if self.code.contains(BIF_OPEN) {
             self.code = new_child_parse!(self, &self.src, false);
         }
