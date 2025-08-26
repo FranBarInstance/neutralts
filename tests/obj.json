@@ -2,7 +2,7 @@
     "engine": "Python",
     "file": "tests/script.py",
     "params": {
-        "varname": "1 {:;text:}"
+        "param1": "one"
     },
     "callback": "main",
     "template": "tests/obj.ntpl"
