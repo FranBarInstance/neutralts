@@ -45,6 +45,7 @@ impl<'a> Bif<'a> {
 
         let obj_raw;
         if self.params.starts_with('{') && self.params.ends_with('}') {
+            // json inline
             obj_raw = self.params.clone();
         } else {
             self.file_path = self.params.clone();
