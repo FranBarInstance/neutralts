@@ -6,7 +6,6 @@ use crate::{
     utils::is_empty_key,
     Value,
 };
-use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 
@@ -37,21 +36,15 @@ impl<'a> Bif<'a> {
         }
 
         if !self.flags.is_empty() {
-            let flags_allowed: HashSet<&str> = ["inline"].into_iter().collect();
-
-            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
-                if !flags_allowed.contains(f) {
-                    return Err(BifError {
-                        msg: format!("{} flag not allowed", f),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
-                }
-            }
+            return Err(BifError {
+                msg: "flags not allowed".to_string(),
+                name: self.alias.clone(),
+                src: self.raw.to_string(),
+            });
         }
 
         let obj_raw;
-        if self.flags.contains("|inline|") {
+        if self.params.starts_with('{') && self.params.ends_with('}') {
             obj_raw = self.params.clone();
         } else {
             self.file_path = self.params.clone();
@@ -192,7 +185,7 @@ mod tests {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:obj; {:flg; inline :} { \"file\": \"tests/script.py\" } >> {:;local::py_hello:} :}</div>");
+        template.set_src_str("<div>{:obj; { \"file\": \"tests/script.py\" } >> {:;local::py_hello:} :}</div>");
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>Hello from Python!</div>");
@@ -210,7 +203,7 @@ mod tests {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:obj; {:flg; inline :} { \"file\": \"tests/script.py\" } >>  :}{:;local::py_hello:}</div>");
+        template.set_src_str("<div>{:obj; { \"file\": \"tests/script.py\" } >>  :}{:;local::py_hello:}</div>");
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div></div>");
@@ -228,7 +221,7 @@ mod tests {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:+obj; {:flg; inline :} { \"file\": \"tests/script.py\" } >>  :}{:;local::py_hello:}</div>");
+        template.set_src_str("<div>{:+obj; { \"file\": \"tests/script.py\" } >>  :}{:;local::py_hello:}</div>");
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>Hello from Python!</div>");
@@ -264,7 +257,7 @@ mod tests {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:obj; {:flg; inline :} { \"file\": \"nonexistent.py\" } >> {:;local::py_hello:} :}</div>");
+        template.set_src_str("<div>{:obj; { \"file\": \"nonexistent.py\" } >> {:;local::py_hello:} :}</div>");
         let result = template.render();
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
@@ -318,7 +311,7 @@ mod tests {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:obj; {:flg; inline :} {malformed json} >> :}</div>");
+        template.set_src_str("<div>{:obj; {malformed json} >> :}</div>");
         let result = template.render();
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
@@ -336,7 +329,7 @@ mod tests {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:obj; {:flg; inline :} {\"engine\":\"ruby\",\"file\":\"tests/script.py\"} >> :}</div>");
+        template.set_src_str("<div>{:obj; {\"engine\":\"ruby\",\"file\":\"tests/script.py\"} >> :}</div>");
         let result = template.render();
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
@@ -390,7 +383,7 @@ mod tests {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:obj; {:flg; inline :} { \"file\": \"tests/script.py\", \"params\": {\"param1\":\"{:;__test-nts:}\"} } >> {:;local::param1:} :}</div>");
+        template.set_src_str("<div>{:obj; { \"file\": \"tests/script.py\", \"params\": {\"param1\":\"{:;__test-nts:}\"} } >> {:;local::param1:} :}</div>");
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>nts</div>");

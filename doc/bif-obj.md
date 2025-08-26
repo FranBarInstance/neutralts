@@ -4,8 +4,23 @@
 
 Executes a external script (currently only Python) and processes its output. The script receives parameters and can access the template schema.
 
+JSON obj file
 ```html
 {:obj; fileobj.json :}
+```
+
+JSON obj inline:
+
+```html
+{:obj;
+    {
+        "engine": "Python",
+        "file": "script.py",
+        "params": {},
+        "callback": "main",
+        "template": "template.ntpl"
+    }
+:}
 ```
 
 The idea is to use a script that has its own template to assign values to the variables of that template. In a JSON file, an object with its properties, script to execute, template, etc., is defined.
@@ -56,7 +71,7 @@ The variables are set in the template as "locals" `{:;local::varname:}`
 Example for the previous script:
 
 ```html
-{:obj; {:flg; inline :} { "file": "script.py" } >>
+{:obj; { "file": "script.py" } >>
     {:;local::varname:}
 :}
 ```
@@ -84,32 +99,9 @@ Removes previous whitespaces.
 
 For more details about the "+" see "modifiers".
 
-Flags
------
+No flags
+--------
 
-```html
-{:obj; {:flg; inline :} >> ... :}
-```
-
-### Flag: inline
-
-Allows embedding the configuration object directly in the template instead of loading from a file:
-
-```html
-{:obj; {:flg; inline :}
-    {
-        "engine": "Python",
-        "file": "script.py",
-        "params": {
-            "name": "World"
-        },
-        "callback": "main",
-        "template": "greeting.ntpl"
-    }
-:}
-```
-
-Note: Using "flags" requires ">>" even when it's empty.
 
 Examples
 --------
@@ -121,7 +113,7 @@ Basic usage with file:
 
 Inline configuration with parameters:
 ```html
-{:obj; {:flg; inline :}
+{:obj;
     {
         "file": "scripts/hello.py",
         "params": {
@@ -130,7 +122,7 @@ Inline configuration with parameters:
     }
 :}
 
-{:obj; {:flg; inline :}
+{:obj;
     {
         "file": "scripts/hello.py",
         "params": {
@@ -142,7 +134,7 @@ Inline configuration with parameters:
 
 Using template with script output:
 ```html
-{:obj; {:flg; inline :}
+{:obj;
     {
         "file": "scripts/data.py",
         "template": "templates/view.ntpl"
