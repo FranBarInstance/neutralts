@@ -405,7 +405,12 @@
 <a href="#404" id="404">404</a>
 <a href="#405" id="405">405</a>
 <a href="#406" id="406">406</a>
-<a href="#407" id="407">407</a></pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a></pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     json, Value,
     block_parser::BlockInherit,
     constants::<span class="kw-2">*</span>,
@@ -451,6 +456,10 @@
 <span class="kw">mod </span>parse_bif_trans;
 <span class="kw">mod </span>parse_bif_unknown;
 <span class="kw">mod </span>parse_bif_var;
+<span class="kw">mod </span>parse_bif_obj;
+
+<span class="kw">mod </span>exec_python;
+<span class="kw">pub use </span>exec_python::PythonExecutor;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>BifError {
     <span class="kw">pub</span>(<span class="kw">crate</span>) msg: String,
@@ -598,6 +607,7 @@
             <span class="string">"snip" </span>=&gt; result = <span class="self">self</span>.parse_bif_snippet(),
             <span class="string">"sum" </span>=&gt; result = <span class="self">self</span>.parse_bif_sum(),
             <span class="string">"trans" </span>=&gt; result = <span class="self">self</span>.parse_bif_trans(),
+            <span class="string">"obj" </span>=&gt; result = <span class="self">self</span>.parse_bif_obj(),
             <span class="kw">_ </span>=&gt; result = <span class="self">self</span>.parse_bif_unknown(),
         }
 

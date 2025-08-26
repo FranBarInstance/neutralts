@@ -39,7 +39,7 @@ def main(params=None):
 
 It must return a dictionary where the variables are set in the format:
 
-```
+```text
 {
     "data": {
         "varname": "value",

@@ -68,6 +68,8 @@
 //!
 #![doc = include_str!("../doc/bif-neutral.md")]
 //!
+#![doc = include_str!("../doc/bif-obj.md")]
+//!
 #![doc = include_str!("../doc/bif-param.md")]
 //!
 #![doc = include_str!("../doc/bif-rand.md")]
