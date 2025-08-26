@@ -1,5 +1,6 @@
 {:obj; ... :}
 =============
+**This feature is experimental.**
 
 Executes a external script (currently only Python) and processes its output. The script receives parameters and can access the template schema.
 
