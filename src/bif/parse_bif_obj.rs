@@ -85,6 +85,7 @@ impl<'a> Bif<'a> {
 
         let engine = obj["engine"].as_str().unwrap_or(DEFAULT_OBJ_ENGINE);
         if engine.to_lowercase() != "python" {
+            // currently only Python is supported
             return Err(BifError {
                 msg: "only Python engine is supported".to_string(),
                 name: self.alias.clone(),
