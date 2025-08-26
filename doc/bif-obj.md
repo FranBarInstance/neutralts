@@ -66,7 +66,7 @@ Output:
 Hello from Python!
 ```
 
-We can define a template in the object, we can put the template inline after ">>" or we can do both things, in the latter case they are summed, first the template defined in the object will be shown and then the inline one.
+We can define a template in the object, in the latter case they are summed, first the template defined in the object will be shown and then the inline one.
 
 Modifiers:
 ----------

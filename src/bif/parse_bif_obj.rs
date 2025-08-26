@@ -20,9 +20,16 @@ impl<'a> Bif<'a> {
             });
         }
 
-        if !self.extract_params_code(true) {
-            self.params = self.code.clone();
-            self.code = "".to_string();
+        let mut added_bif_code = false;
+        if !self.src.contains(BIF_CODE) {
+            self.src.push_str(BIF_CODE);
+            added_bif_code = true;
+        }
+
+        self.extract_params_code(true);
+
+        if added_bif_code {
+            self.src.truncate(self.src.len() - BIF_CODE.len());
         }
 
         if !self.flags.is_empty() {
