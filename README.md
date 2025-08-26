@@ -136,7 +136,7 @@ Bif layout (Build-in function)
     |    .-- bif name
     |    |   .-- name separator
     |    |   |     .-- params
-    |    |   |     |    .-- params/code separatos
+    |    |   |     |    .-- params/code separator
     |    |   |     |    |    .-- code
     |    |   |     |    |    |   .-- close bif
     |    |   |     |    |    |   |
