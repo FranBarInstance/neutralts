@@ -106,7 +106,6 @@ Allows embedding the configuration object directly in the template instead of lo
         "callback": "main",
         "template": "greeting.ntpl"
     }
-    >>
 :}
 ```
 
@@ -129,7 +128,6 @@ Inline configuration with parameters:
             "name": "World"
         }
     }
-    >>
 :}
 
 {:obj; {:flg; inline :}
@@ -139,7 +137,6 @@ Inline configuration with parameters:
             "name": "{:;varname:}"
         }
     }
-    >>
 :}
 ```
 
@@ -150,7 +147,6 @@ Using template with script output:
         "file": "scripts/data.py",
         "template": "templates/view.ntpl"
     }
-    >>
 :}
 ```
 
