@@ -11,6 +11,10 @@ use std::fs;
 use std::path::Path;
 
 impl<'a> Bif<'a> {
+    /*
+        {:obj; ...  :}
+        {:code; {:flags; inline :} --- >>  <div>...</div>  :}
+    */
     pub(crate) fn parse_bif_obj(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate {
             return Err(BifError {
