@@ -1,0 +1,9 @@
+{
+    "engine": "Python",
+    "file": "tests/script.py",
+    "params": {
+        "varname": "1 {:;text:}"
+    },
+    "callback": "main",
+    "template": "tests/obj.ntpl"
+}
