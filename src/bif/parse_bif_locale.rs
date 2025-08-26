@@ -79,9 +79,8 @@ impl<'a> Bif<'a> {
             self.file_path = new_child_parse!(self, &self.code, false);
         }
 
-        if self.file_path.starts_with("#") {
-            self.file_path.remove(0);
-            self.file_path = format!("{}{}", self.inherit.current_dir, self.file_path);
+        if let Some(stripped) = self.file_path.strip_prefix('#') {
+            self.file_path = format!("{}{}", self.inherit.current_dir, stripped);
         }
 
         let path = Path::new(&self.file_path);

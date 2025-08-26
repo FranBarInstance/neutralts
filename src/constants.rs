@@ -547,3 +547,6 @@ pub const DIV_FETCH_CLICK: &str = r#"
     {body}
 </div>
 "#;
+
+pub const DEFAULT_OBJ_ENGINE: &str = "python";
+pub const DEFAULT_OBJ_CALLBACK: &str = "main";

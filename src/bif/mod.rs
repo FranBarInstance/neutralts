@@ -44,6 +44,10 @@ mod parse_bif_sum;
 mod parse_bif_trans;
 mod parse_bif_unknown;
 mod parse_bif_var;
+mod parse_bif_obj;
+
+mod exec_python;
+pub use exec_python::PythonExecutor;
 
 pub(crate) struct BifError {
     pub(crate) msg: String,
@@ -191,6 +195,7 @@ impl<'a> Bif<'a> {
             "snip" => result = self.parse_bif_snippet(),
             "sum" => result = self.parse_bif_sum(),
             "trans" => result = self.parse_bif_trans(),
+            "obj" => result = self.parse_bif_obj(),
             _ => result = self.parse_bif_unknown(),
         }
 
