@@ -10,6 +10,7 @@ use crate::{
     constants::*,
     bif::Bif,
     bif::BifError,
+    bif::constants::*,
 };
 
 impl<'a> Bif<'a> {
@@ -22,11 +23,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_count(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         let is_set = self.extract_params_code(true);
@@ -40,11 +37,7 @@ impl<'a> Bif<'a> {
             let count_value = match self.code.parse::<i32>() {
                 Ok(num) => num,
                 Err(_) => {
-                    return Err(BifError {
-                        msg: "argument is not a number".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
+                    return Err(self.bif_error(BIF_ERROR_ARGUMENT_NOT_NUMBER));
                 }
             };
 
@@ -55,11 +48,7 @@ impl<'a> Bif<'a> {
             let count_value = match self.get_data(&count_name).parse::<i32>() {
                 Ok(num) => num,
                 Err(_) => {
-                    return Err(BifError {
-                        msg: "argument is not a number".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
+                    return Err(self.bif_error(BIF_ERROR_ARGUMENT_NOT_NUMBER));
                 }
             };
             let new_value = count_value + 1;
@@ -68,10 +57,6 @@ impl<'a> Bif<'a> {
             self.out = count_value.to_string();
         }
 
-        Err(BifError {
-            msg: "Bif 'count' is deprecated".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })
+        Err(self.bif_error(BIF_ERROR_BIF_DEPRECATED))
     }
 }

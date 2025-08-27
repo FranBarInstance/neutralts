@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-param.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*, json, utils::*};
+use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*, json, utils::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -9,21 +9,13 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_param(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         let is_set = self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         if is_set {
@@ -39,11 +31,7 @@ impl<'a> Bif<'a> {
 
                 Ok(())
             } else {
-                Err(BifError {
-                    msg: "param cannot be set here".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                Err(self.bif_error(BIF_ERROR_PARAM_SET_HERE))
             }
         } else {
             if self.code.contains(BIF_OPEN) {

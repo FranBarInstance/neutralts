@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-for.md")]
 
-use crate::{bif::Bif, bif::BifError};
+use crate::{bif::Bif, bif::BifError, bif::constants::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -10,21 +10,13 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_for(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         self.params = self.params.replace("..", " ");
@@ -33,11 +25,7 @@ impl<'a> Bif<'a> {
         let var_name = match parts.next() {
             Some(value) => value.to_string(),
             None => {
-                return Err(BifError {
-                    msg: "arguments not found".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(BIF_ERROR_ARGUMENTS_NOT_FOUND));
             }
         };
 
@@ -45,19 +33,11 @@ impl<'a> Bif<'a> {
             Some(value) => match value.parse::<i32>() {
                 Ok(num) => num,
                 Err(_) => {
-                    return Err(BifError {
-                        msg: "argument is not a number".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    })
+                    return Err(self.bif_error(BIF_ERROR_ARGUMENT_NOT_NUMBER));
                 }
             },
             None => {
-                return Err(BifError {
-                    msg: "arguments 'from' and 'to' not found".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(BIF_ERROR_ARGS_FROM_TO_NOT_FOUND));
             }
         };
 
@@ -65,19 +45,11 @@ impl<'a> Bif<'a> {
             Some(value) => match value.parse::<i32>() {
                 Ok(num) => num,
                 Err(_) => {
-                    return Err(BifError {
-                        msg: "argument is not a number".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    })
+                    return Err(self.bif_error(BIF_ERROR_ARGUMENT_NOT_NUMBER));
                 }
             },
             None => {
-                return Err(BifError {
-                    msg: "arguments 'to' not found".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(BIF_ERROR_ARGS_TO_NOT_FOUND));
             }
         };
 

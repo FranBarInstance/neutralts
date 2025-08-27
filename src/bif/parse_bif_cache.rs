@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-cache.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*, utils::*};
+use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*, utils::*};
 use md5::Digest;
 use sha2::Sha256;
 use std::fs;
@@ -18,21 +18,13 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_cache(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(false);
 
         if self.params.contains("{:flg;") {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         if self.mod_negate {

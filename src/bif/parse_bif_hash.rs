@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-hash.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*};
 use md5::{Digest, Md5};
 use rand::Rng;
 
@@ -11,11 +11,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_hash(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.code = self.src.trim().to_string();

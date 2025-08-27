@@ -1,7 +1,6 @@
 #![doc = include_str!("../../doc/bif-data.md")]
 
-use std::collections::HashSet;
-use crate::{bif::Bif, bif::BifError, constants::*, utils::*, Value};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*, utils::*, Value};
 use std::fs;
 use std::path::Path;
 
@@ -11,29 +10,14 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_data(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            let flags_allowed: HashSet<&str> = [
-                "inline",
-                "require"
-            ].into_iter().collect();
-
-            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
-                if !flags_allowed.contains(f) {
-                    return Err(BifError {
-                        msg: format!("{} flag not allowed", f),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
-                }
+            if !self.flags.contains("|require|") && !self.flags.contains("|inline|") {
+                return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
             }
         }
 
@@ -41,11 +25,7 @@ impl<'a> Bif<'a> {
             let data: Value = match serde_json::from_str(&self.code) {
                 Ok(value) => value,
                 Err(_) => {
-                    return Err(BifError {
-                        msg: "not a valid JSON file".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    })
+                    return Err(self.bif_error(BIF_ERROR_NOT_VALID_JSON));
                 }
             };
 
@@ -67,11 +47,7 @@ impl<'a> Bif<'a> {
         // For security requires {:allow;
         if self.file_path.contains(BIF_OPEN) {
             if !self.contains_allow(&self.file_path) {
-                return Err(BifError {
-                    msg: "insecure file name".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                });
+                return Err(self.bif_error("insecure file name"));
             }
             self.file_path = new_child_parse!(self, &self.code, false);
         }
@@ -83,11 +59,7 @@ impl<'a> Bif<'a> {
         let path = Path::new(&self.file_path);
         if !Path::new(path).exists() {
             if self.flags.contains("|require|") {
-                return Err(BifError {
-                    msg: "file not found".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                });
+                return Err(self.bif_error("file not found"));
             } else {
                 self.out = EMPTY_STRING;
 
@@ -112,11 +84,7 @@ impl<'a> Bif<'a> {
         let data: Value = match serde_json::from_str(&file_raw) {
             Ok(value) => value,
             Err(_) => {
-                return Err(BifError {
-                    msg: "not a valid JSON file".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(BIF_ERROR_NOT_VALID_JSON));
             }
         };
 
@@ -277,5 +245,4 @@ mod tests {
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
     }
-
 }

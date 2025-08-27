@@ -2,6 +2,7 @@
 use crate::{
     bif::Bif,
     bif::BifError,
+    bif::constants::*,
 };
 
 impl<'a> Bif<'a> {
@@ -11,11 +12,7 @@ impl<'a> Bif<'a> {
     pub(crate) fn parse_bif_unknown(&mut self) -> Result<(), BifError> {
         self.alias = "unknown".to_string();
 
-        Err(BifError {
-            msg: "unknown bif".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })
+    Err(self.bif_error(BIF_ERROR_UNKNOWN_BIF))
     }
 }
 

@@ -6,7 +6,7 @@ use crate::{
     utils::*,
 };
 
-// Include all the parse_bif_* modules
+mod constants;
 mod parse_bif_allow;
 mod parse_bif_array;
 mod parse_bif_bool;
@@ -409,4 +409,13 @@ impl<'a> Bif<'a> {
 
         result
     }
+
+    pub(crate) fn bif_error(&self, msg: &str) -> BifError {
+        BifError {
+            msg: msg.to_string(),
+            name: self.alias.clone(),
+            src: self.raw.to_string(),
+        }
+    }
+
 }

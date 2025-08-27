@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-contains.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*};
+use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -8,36 +8,20 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_contains(&mut self) -> Result<(), BifError> {
         if self.mod_filter {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(false);
 
         if self.params.contains("{:flg;") {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         let args = self.extract_args();
 
-        let haystack = args.get(1).cloned().ok_or_else(|| BifError {
-            msg: "arguments not found".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+        let haystack = args.get(1).cloned().ok_or_else(|| self.bif_error(BIF_ERROR_ARGUMENTS_NOT_FOUND))?;
 
-        let needle = args.get(2).cloned().ok_or_else(|| BifError {
-            msg: "arguments not found".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+        let needle = args.get(2).cloned().ok_or_else(|| self.bif_error(BIF_ERROR_ARGUMENTS_NOT_FOUND))?;
 
         if haystack.contains(&needle) ^ self.mod_negate {
             if self.code.contains(BIF_OPEN) {

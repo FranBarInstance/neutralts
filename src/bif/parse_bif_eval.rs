@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-eval.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -8,21 +8,13 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_eval(&mut self) -> Result<(), BifError> {
         if self.mod_filter {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(false);
 
         if self.params.contains("{:flg;") {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         if self.params.contains(BIF_OPEN) {

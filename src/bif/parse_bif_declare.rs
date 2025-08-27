@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-declare.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*, json};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*, json};
 
 impl<'a> Bif<'a> {
     /*
@@ -8,21 +8,13 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_declare(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         if self.inherit.current_file.contains(SNIPPETS_FILES) {
@@ -36,11 +28,7 @@ impl<'a> Bif<'a> {
 
             self.out = EMPTY_STRING;
         } else {
-            return Err(BifError {
-                msg: "declare cannot be set here".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_DECLARE_SET_HERE));
         }
 
         Ok(())
@@ -105,5 +93,4 @@ mod tests {
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
     }
-
 }

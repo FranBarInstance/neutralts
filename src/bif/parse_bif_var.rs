@@ -1,11 +1,6 @@
 #![doc = include_str!("../../doc/bif-var.md")]
 
-use crate::{
-    constants::*,
-    utils::*,
-    bif::Bif,
-    bif::BifError,
-};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*, utils::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -14,11 +9,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_var(&mut self) -> Result<(), BifError> {
         if self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         // Unprintable: {:;:} / {:; :}
@@ -41,11 +32,7 @@ impl<'a> Bif<'a> {
             if !self.contains_allow(&self.src) {
                 self.out = EMPTY_STRING;
 
-                return Err(BifError {
-                    msg: "insecure varname".to_string(),
-                    name: self.alias.clone(),
-                    src: self.src.clone(),
-                });
+                return Err(self.bif_error(BIF_ERROR_INSECURE_VARNAME));
             }
 
             var_name = new_child_parse!(self, &self.src, self.mod_scope);
@@ -76,7 +63,6 @@ impl<'a> Bif<'a> {
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -110,7 +96,8 @@ mod tests {
             }
         };
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:;__test-obj-nts->level1-obj->level2-obj->level3-arr->0:}</div>");
+        template
+            .set_src_str("<div>{:;__test-obj-nts->level1-obj->level2-obj->level3-arr->0:}</div>");
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>one</div>");
@@ -198,7 +185,10 @@ mod tests {
         template.set_src_str("<div>{:&;escape:}</div>");
         let result = template.render();
         assert!(!template.has_error());
-        assert_eq!(result, "<div>&lt;&gt;&amp;&quot;&#x27;&#x2F;&#123;&#125;</div>");
+        assert_eq!(
+            result,
+            "<div>&lt;&gt;&amp;&quot;&#x27;&#x2F;&#123;&#125;</div>"
+        );
     }
 
     #[test]
@@ -215,7 +205,10 @@ mod tests {
         template.set_src_str("<div>{:&;double_escape:}</div>");
         let result = template.render();
         assert!(!template.has_error());
-        assert_eq!(result, "<div>&lt;&gt;&amp;&quot;&#x27;&#x2F;&#123;&#125;</div>");
+        assert_eq!(
+            result,
+            "<div>&lt;&gt;&amp;&quot;&#x27;&#x2F;&#123;&#125;</div>"
+        );
     }
 
     #[test]
@@ -232,7 +225,10 @@ mod tests {
         template.set_src_str("<div>{:;CONTEXT->GET->escape:}</div>");
         let result = template.render();
         assert!(!template.has_error());
-        assert_eq!(result, "<div>&lt;&gt;&amp;&quot;&#x27;&#x2F;&#123;&#125;</div>");
+        assert_eq!(
+            result,
+            "<div>&lt;&gt;&amp;&quot;&#x27;&#x2F;&#123;&#125;</div>"
+        );
     }
 
     #[test]
@@ -275,7 +271,10 @@ mod tests {
         template.set_src_str("<div>{:;escape:}</div>");
         let result = template.render();
         assert!(!template.has_error());
-        assert_eq!(result, "<div>&lt;&gt;&amp;&quot;&#x27;&#x2F;&#123;&#125;</div>");
+        assert_eq!(
+            result,
+            "<div>&lt;&gt;&amp;&quot;&#x27;&#x2F;&#123;&#125;</div>"
+        );
     }
 
     #[test]

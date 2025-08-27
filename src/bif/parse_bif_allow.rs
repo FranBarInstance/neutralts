@@ -4,8 +4,9 @@ use std::collections::HashSet;
 use crate::{
     bif::Bif,
     bif::BifError,
+    bif::constants::*,
     constants::*,
-    utils::*
+    utils::*,
 };
 
 impl<'a> Bif<'a> {
@@ -14,11 +15,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_allow(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(true);
@@ -29,11 +26,7 @@ impl<'a> Bif<'a> {
         );
 
         if words_string.is_empty() {
-            return Err(BifError {
-                msg: self.params.clone() + " declared is empty",
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(&(self.params.clone() + BIF_ERROR_DECLARED_IS_EMPTY)));
         }
 
         if !self.flags.is_empty() {
@@ -45,11 +38,7 @@ impl<'a> Bif<'a> {
 
             for f in self.flags.split('|').filter(|s| !s.is_empty()) {
                 if !flags_allowed.contains(f) {
-                    return Err(BifError {
-                        msg: format!("{} flag not allowed", f),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
+                    return Err(self.bif_error(&format!("{} flag not allowed", f)));
                 }
             }
         }

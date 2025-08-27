@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-array.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*, utils::*};
+use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*, utils::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -8,21 +8,13 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_array(&mut self) -> Result<(), BifError> {
         if self.mod_filter {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         let mut varname = self.params.as_str();

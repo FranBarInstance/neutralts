@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-coalesce.md")]
 
-use crate::{bif::Bif, bif::BifError};
+use crate::{bif::Bif, bif::BifError, bif::constants::*,};
 
 impl<'a> Bif<'a> {
     /*
@@ -12,11 +12,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_coalesce(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         // This var so as not to overwrite the original: inherit.last_bif_out

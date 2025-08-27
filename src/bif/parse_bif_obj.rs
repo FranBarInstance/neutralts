@@ -1,7 +1,7 @@
 #![doc = include_str!("../../doc/bif-obj.md")]
 
 use crate::{
-    bif::{Bif, BifError, PythonExecutor},
+    bif::{Bif, BifError, PythonExecutor, constants::*},
     constants::*,
     utils::is_empty_key,
     Value,
@@ -16,11 +16,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_obj(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         let mut added_bif_code = false;
@@ -36,11 +32,7 @@ impl<'a> Bif<'a> {
         }
 
         if !self.flags.is_empty() {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         let obj_raw;
@@ -53,11 +45,7 @@ impl<'a> Bif<'a> {
             // For security requires {:allow;
             if self.file_path.contains(BIF_OPEN) {
                 if !self.contains_allow(&self.file_path) {
-                    return Err(BifError {
-                        msg: "insecure file name".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
+                    return Err(self.bif_error(BIF_ERROR_INSECURE_FILE_NAME));
                 }
                 self.file_path = new_child_parse!(self, &self.params, false);
             }
@@ -68,34 +56,18 @@ impl<'a> Bif<'a> {
 
             let path = Path::new(&self.file_path);
             if !path.exists() {
-                return Err(BifError {
-                    msg: "file not found".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                });
+                return Err(self.bif_error(BIF_ERROR_FILE_NOT_FOUND));
             }
 
-            obj_raw = fs::read_to_string(&self.file_path).map_err(|e| BifError {
-                msg: format!("Failed to read file: {}", e),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            })?;
+            obj_raw = fs::read_to_string(&self.file_path).map_err(|e| self.bif_error(&format!("Failed to read file: {}", e)))?;
         }
 
-        let mut obj: Value = serde_json::from_str(obj_raw.trim()).map_err(|e| BifError {
-            msg: format!("Failed to parse JSON: {}", e),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+    let mut obj: Value = serde_json::from_str(obj_raw.trim()).map_err(|e| self.bif_error(&format!("Failed to parse JSON: {}", e)))?;
 
         let engine = obj["engine"].as_str().unwrap_or(DEFAULT_OBJ_ENGINE);
         if engine.to_lowercase() != "python" {
             // currently only Python is supported
-            return Err(BifError {
-                msg: "only Python engine is supported".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_ONLY_PYTHON_ENGINE));
         }
 
         if !self.flags.contains("|inline|") {
@@ -109,11 +81,7 @@ impl<'a> Bif<'a> {
         }
 
         if !Path::new(&file_path_obj).exists() {
-            return Err(BifError {
-                msg: "obj file not found".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_OBJ_FILE_NOT_FOUND));
         }
 
         let params = &obj["params"];

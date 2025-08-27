@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-trans.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*};
+use crate::{bif::Bif, bif::BifError, constants::*, bif::constants::*,};
 
 impl<'a> Bif<'a> {
     /*
@@ -8,11 +8,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_trans(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         // For performance, we avoid calling BlockParser::new if it is not necessary

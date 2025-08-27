@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-exit.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -11,11 +11,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_exit(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         if self.inherit.in_cache {
@@ -27,11 +23,7 @@ impl<'a> Bif<'a> {
         let has_status_params = self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         if self.code.contains(BIF_OPEN) {

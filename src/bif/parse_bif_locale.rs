@@ -1,7 +1,6 @@
 #![doc = include_str!("../../doc/bif-locale.md")]
 
-use std::collections::HashSet;
-use crate::{bif::Bif, bif::BifError, constants::*, utils::*, Value};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*, utils::*, Value};
 use std::fs;
 use std::path::Path;
 
@@ -11,30 +10,17 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_locale(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            let flags_allowed: HashSet<&str> = [
-                "inline",
-                "require",
-                "noparse"
-            ].into_iter().collect();
-
-            for f in self.flags.split('|').filter(|s| !s.is_empty()) {
-                if !flags_allowed.contains(f) {
-                    return Err(BifError {
-                        msg: format!("{} flag not allowed", f),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
-                }
+            if !self.flags.contains("|require|")
+                && !self.flags.contains("|inline|")
+                && !self.flags.contains("|noparse|")
+            {
+                return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
             }
         }
 
@@ -47,11 +33,7 @@ impl<'a> Bif<'a> {
             let locale: Value = match serde_json::from_str(&self.code) {
                 Ok(value) => value,
                 Err(_) => {
-                    return Err(BifError {
-                        msg: "not a valid JSON string".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    })
+                    return Err(self.bif_error(BIF_ERROR_NOT_VALID_JSON));
                 }
             };
 
@@ -119,11 +101,7 @@ impl<'a> Bif<'a> {
         let locale: Value = match serde_json::from_str(&file_raw) {
             Ok(value) => value,
             Err(_) => {
-                return Err(BifError {
-                    msg: "not a valid JSON file".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(BIF_ERROR_NOT_VALID_JSON));
             }
         };
 
@@ -463,10 +441,10 @@ mod tests {
         };
         template.merge_schema_str(SCHEMA).unwrap();
         template.merge_schema_str(schema).unwrap();
-        template.set_src_str("<div>{:locale; {:flg; invalid_flag :} >> tests/locale.es.json :}</div>");
+        template
+            .set_src_str("<div>{:locale; {:flg; invalid_flag :} >> tests/locale.es.json :}</div>");
         let result = template.render();
         assert!(template.has_error());
         assert_eq!(result, "<div></div>");
     }
-
 }

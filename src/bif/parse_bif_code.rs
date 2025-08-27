@@ -1,7 +1,7 @@
 #![doc = include_str!("../../doc/bif-code.md")]
 
 use std::collections::HashSet;
-use crate::{bif::Bif, bif::BifError, constants::*, utils::*};
+use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*, utils::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -10,16 +10,12 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_code(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(true);
 
-            if !self.flags.is_empty() {
+        if !self.flags.is_empty() {
             let flags_allowed: HashSet<&str> = [
                 "safe",
                 "encode_tags",
@@ -30,11 +26,7 @@ impl<'a> Bif<'a> {
 
             for f in self.flags.split('|').filter(|s| !s.is_empty()) {
                 if !flags_allowed.contains(f) {
-                    return Err(BifError {
-                        msg: format!("{} flag not allowed", f),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
+                    return Err(self.bif_error(&format!("{} flag not allowed", f)));
                 }
             }
         }

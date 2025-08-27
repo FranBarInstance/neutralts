@@ -1,7 +1,7 @@
 #![doc = include_str!("../../doc/bif-snippet.md")]
 
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*, json, utils::*};
 use std::collections::HashSet;
-use crate::{bif::Bif, bif::BifError, constants::*, json, utils::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -15,11 +15,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_snippet(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.alias = "snippet".to_string();
@@ -27,21 +23,14 @@ impl<'a> Bif<'a> {
         let is_set = self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            let flags_allowed: HashSet<&str> = [
-                "static"
-            ].into_iter().collect();
+            let flags_allowed: HashSet<&str> = ["static"].into_iter().collect();
 
             for f in self.flags.split('|').filter(|s| !s.is_empty()) {
                 if !flags_allowed.contains(f) {
-                    return Err(BifError {
-                        msg: format!("{} flag not allowed", f),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    });
+                    return Err(self.bif_error(&format!("{} flag not allowed", f)));
                 }
             }
         }
-
 
         if is_set {
             // Set snippets in snippet files and inside snippets

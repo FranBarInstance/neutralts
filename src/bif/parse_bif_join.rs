@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-join.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*, Value};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*, Value};
 
 impl<'a> Bif<'a> {
     /*
@@ -11,27 +11,19 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_join(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.params = self.src.clone();
         let args = self.extract_args();
-
-        let mut array_name = args.get(1).cloned().ok_or_else(|| BifError {
-            msg: "arguments 'array' not found".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
-
-        let separator = args.get(2).cloned().ok_or_else(|| BifError {
-            msg: "arguments 'separator' not found".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+        let mut array_name = args
+            .get(1)
+            .cloned()
+            .ok_or_else(|| self.bif_error(BIF_ERROR_ARGS_ARRAY_NOT_FOUND))?;
+        let separator = args
+            .get(2)
+            .cloned()
+            .ok_or_else(|| self.bif_error(BIF_ERROR_ARGS_SEPARATOR_NOT_FOUND))?;
 
         // optional use keys
         let use_keys = args.get(3).cloned().unwrap_or("".to_string());

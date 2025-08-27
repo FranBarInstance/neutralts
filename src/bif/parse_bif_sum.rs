@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-sum.md")]
 
-use crate::{bif::Bif, bif::BifError};
+use crate::{bif::Bif, bif::BifError, bif::constants::*,};
 
 impl<'a> Bif<'a> {
     /*
@@ -8,48 +8,24 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_sum(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.params = self.src.clone();
 
         if self.params.contains("{:flg;") {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         let args = self.extract_args();
 
-        let param1_str = args.get(1).cloned().ok_or_else(|| BifError {
-            msg: "arguments not found".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+        let param1_str = args.get(1).cloned().ok_or_else(|| self.bif_error(BIF_ERROR_ARGUMENTS_NOT_FOUND))?;
 
-        let param2_str = args.get(2).cloned().ok_or_else(|| BifError {
-            msg: "arguments not found".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+        let param2_str = args.get(2).cloned().ok_or_else(|| self.bif_error(BIF_ERROR_ARGUMENTS_NOT_FOUND))?;
 
-        let param1: f64 = param1_str.parse().map_err(|_| BifError {
-            msg: "invalid argument 1".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+        let param1: f64 = param1_str.parse().map_err(|_| self.bif_error(BIF_ERROR_INVALID_ARGUMENT_1))?;
 
-        let param2: f64 = param2_str.parse().map_err(|_| BifError {
-            msg: "invalid argument 2".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+        let param2: f64 = param2_str.parse().map_err(|_| self.bif_error(BIF_ERROR_INVALID_ARGUMENT_2))?;
 
         self.out = (param1 + param2).to_string();
 

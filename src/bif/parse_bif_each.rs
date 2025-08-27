@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-each.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*, json, Value};
+use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*, json, Value};
 
 impl<'a> Bif<'a> {
     /*
@@ -10,21 +10,13 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_each(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         let mut parts = self.params.split_whitespace();
@@ -32,33 +24,21 @@ impl<'a> Bif<'a> {
         let array_name = match parts.next() {
             Some(value) => value.to_string(),
             None => {
-                return Err(BifError {
-                    msg: "arguments not found".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(BIF_ERROR_ARGUMENTS_NOT_FOUND));
             }
         };
 
         let key_name = match parts.next() {
             Some(value) => value.to_string(),
             None => {
-                return Err(BifError {
-                    msg: "arguments 'key' not found".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(BIF_ERROR_ARGS_KEY_NOT_FOUND));
             }
         };
 
         let val_name = match parts.next() {
             Some(value) => value.to_string(),
             None => {
-                return Err(BifError {
-                    msg: "arguments 'value' not found".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(BIF_ERROR_ARGS_VALUE_NOT_FOUND));
             }
         };
 

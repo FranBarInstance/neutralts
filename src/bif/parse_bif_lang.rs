@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-lang.md")]
 
-use crate::{bif::Bif, bif::BifError};
+use crate::{bif::Bif, bif::BifError, bif::constants::*,};
 
 impl<'a> Bif<'a> {
     /*
@@ -8,11 +8,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_lang(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         self.out = self.shared.lang.to_string();

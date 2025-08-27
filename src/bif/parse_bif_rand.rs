@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-rand.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*};
+use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*};
 use rand::Rng;
 
 impl<'a> Bif<'a> {
@@ -10,11 +10,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_rand(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate || self.mod_scope {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         let mut rng = rand::rng();
@@ -37,19 +33,11 @@ impl<'a> Bif<'a> {
                 Some(value) => match value.parse::<i32>() {
                     Ok(num) => num,
                     Err(_) => {
-                        return Err(BifError {
-                            msg: "argument is not a number".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        })
+                        return Err(self.bif_error(BIF_ERROR_ARGUMENT_NOT_NUMBER));
                     }
                 },
                 None => {
-                    return Err(BifError {
-                        msg: "arguments not found".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    })
+                    return Err(self.bif_error(BIF_ERROR_ARGUMENTS_NOT_FOUND));
                 }
             };
 
@@ -57,28 +45,16 @@ impl<'a> Bif<'a> {
                 Some(value) => match value.parse::<i32>() {
                     Ok(num) => num,
                     Err(_) => {
-                        return Err(BifError {
-                            msg: "argument is not a number".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        })
+                        return Err(self.bif_error(BIF_ERROR_ARGUMENT_NOT_NUMBER));
                     }
                 },
                 None => {
-                    return Err(BifError {
-                        msg: "arguments not found".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    })
+                    return Err(self.bif_error(BIF_ERROR_ARGUMENTS_NOT_FOUND));
                 }
             };
 
             if from > to {
-                return Err(BifError {
-                    msg: "from > to".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                });
+                return Err(self.bif_error(BIF_ERROR_FROM_GREATER_THAN_TO));
             }
 
             self.out = rng.random_range(from..=to).to_string();

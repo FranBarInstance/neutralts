@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-redirect.md")]
 
-use crate::{bif::Bif, bif::BifError, constants::*};
+use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -9,11 +9,7 @@ impl<'a> Bif<'a> {
     */
     pub(crate) fn parse_bif_redirect(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_scope || self.mod_negate {
-            return Err(BifError {
-                msg: "modifier not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
         if self.inherit.in_cache {
@@ -26,11 +22,7 @@ impl<'a> Bif<'a> {
         let has_status_params = self.extract_params_code(true);
 
         if !self.flags.is_empty() {
-            return Err(BifError {
-                msg: "flags not allowed".to_string(),
-                name: self.alias.clone(),
-                src: self.raw.to_string(),
-            });
+            return Err(self.bif_error(BIF_ERROR_FLAGS_NOT_ALLOWED));
         }
 
         if self.code.contains(BIF_OPEN) {
@@ -42,55 +34,35 @@ impl<'a> Bif<'a> {
             status_code = match self.params.as_str() {
                 "301" => {
                     if self.code.is_empty() {
-                        return Err(BifError {
-                            msg: "this redirection requires URL".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(BIF_ERROR_REDIRECT_REQUIRES_URL));
                     }
 
                     "301"
                 }
                 "302" => {
                     if self.code.is_empty() {
-                        return Err(BifError {
-                            msg: "this redirection requires URL".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(BIF_ERROR_REDIRECT_REQUIRES_URL));
                     }
 
                     "302"
                 }
                 "303" => {
                     if self.code.is_empty() {
-                        return Err(BifError {
-                            msg: "this redirection requires URL".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(BIF_ERROR_REDIRECT_REQUIRES_URL));
                     }
 
                     "303"
                 }
                 "307" => {
                     if self.code.is_empty() {
-                        return Err(BifError {
-                            msg: "this redirection requires URL".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(BIF_ERROR_REDIRECT_REQUIRES_URL));
                     }
 
                     "307"
                 }
                 "308" => {
                     if self.code.is_empty() {
-                        return Err(BifError {
-                            msg: "this redirection requires URL".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(BIF_ERROR_REDIRECT_REQUIRES_URL));
                     }
 
                     "308"
@@ -107,11 +79,7 @@ impl<'a> Bif<'a> {
                 }
                 "js:redirect:top" => {
                     if self.code.is_empty() {
-                        return Err(BifError {
-                            msg: "this redirection requires URL".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(BIF_ERROR_REDIRECT_REQUIRES_URL));
                     }
                     // TODO replace(['%2F','%3A','%3F','%3D','%26'], ['/',':','?','=','&'], url);
                     self.shared.redirect_js =
@@ -121,11 +89,7 @@ impl<'a> Bif<'a> {
                 }
                 "js:redirect:self" => {
                     if self.code.is_empty() {
-                        return Err(BifError {
-                            msg: "this redirection requires URL".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(BIF_ERROR_REDIRECT_REQUIRES_URL));
                     }
                     // TODO replace(['%2F','%3A','%3F','%3D','%26'], ['/',':','?','=','&'], url);
                     self.shared.redirect_js =
@@ -137,11 +101,7 @@ impl<'a> Bif<'a> {
                     // Parameters are optional in js:reload:self and js:reload:top
                     if !self.code.contains("js:reload:self") || !self.code.contains("js:reload:top")
                     {
-                        return Err(BifError {
-                            msg: "status code not allowed".to_string(),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(BIF_ERROR_STATUS_CODE_NOT_ALLOWED));
                     } else {
                         "200"
                     }
@@ -161,11 +121,7 @@ impl<'a> Bif<'a> {
                     "200"
                 }
                 _ => {
-                    return Err(BifError {
-                        msg: "redirect type not allowed".to_string(),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    })
+                    return Err(self.bif_error(BIF_ERROR_REDIRECT_TYPE_NOT_ALLOWED))
                 }
             };
         }
