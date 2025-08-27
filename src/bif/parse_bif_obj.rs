@@ -341,6 +341,42 @@ mod tests {
     }
 
     #[test]
+    fn test_bif_obj_schema_false() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:obj; {\"file\":\"tests/script.py\",\"schema\":false} >> {:;local::test_nts:} :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
+    #[test]
+    fn test_bif_obj_schema_true() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:obj; {\"file\":\"tests/script.py\",\"schema\":true} >> {:;local::test_nts:} :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>nts</div>");
+    }
+
+    #[test]
     fn test_bif_obj_missing_obj_file() {
         let mut template = match crate::Template::new() {
             Ok(tpl) => tpl,
