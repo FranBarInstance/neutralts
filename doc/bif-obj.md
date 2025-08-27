@@ -31,6 +31,7 @@ Example Object:
 {
     "engine": "Python",          // Optional, default "Python"
     "file": "script.py",         // Required, path to Python script
+    "schema": false              // Optional, default false
     "params": {},                // Optional, parameters passed to the script
     "callback": "main",          // Optional, default "main"
     "template": "template.ntpl"  // Optional, template to process the result
@@ -51,7 +52,7 @@ def main(params=None):
     }
 ```
 
-`__NEUTRAL_SCHEMA__` is read-only for accessing the schema. Access to `__NEUTRAL_SCHEMA__` can be slow, it is faster to use parameters.
+`__NEUTRAL_SCHEMA__` (requires `"schema": true` in object) is read-only for accessing the schema. Access to `__NEUTRAL_SCHEMA__` can be slow, it is faster to use parameters.
 
 It must return a dictionary where the variables are set in the format:
 

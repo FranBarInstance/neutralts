@@ -122,7 +122,11 @@ impl<'a> Bif<'a> {
             &file_path_obj,
             params,
             callback_name,
-            Some(&self.shared.schema)
+            if obj.get("schema").and_then(|v| v.as_bool()).unwrap_or(false) {
+                Some(&self.shared.schema)
+            } else {
+                None
+            }
         )?;
 
         let mut code = String::new();
