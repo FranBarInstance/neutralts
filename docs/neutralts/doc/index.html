@@ -2168,6 +2168,7 @@ Hello</code></pre></div><h3 id="flags-3"><a class="doc-anchor" href="#flags-3">Â
 <div class="example-wrap"><pre class="language-json"><code>{
     &quot;engine&quot;: &quot;Python&quot;,          // Optional, default &quot;Python&quot;
     &quot;file&quot;: &quot;script.py&quot;,         // Required, path to Python script
+    &quot;schema&quot;: false              // Optional, default false
     &quot;params&quot;: {},                // Optional, parameters passed to the script
     &quot;callback&quot;: &quot;main&quot;,          // Optional, default &quot;main&quot;
     &quot;template&quot;: &quot;template.ntpl&quot;  // Optional, template to process the result
@@ -2181,7 +2182,7 @@ Hello</code></pre></div><h3 id="flags-3"><a class="doc-anchor" href="#flags-3">Â
             &quot;varname&quot;: &quot;Hello from Python!&quot;
         }
     }</code></pre></div>
-<p><code>__NEUTRAL_SCHEMA__</code> is read-only for accessing the schema. Access to <code>__NEUTRAL_SCHEMA__</code> can be slow, it is faster to use parameters.</p>
+<p><code>__NEUTRAL_SCHEMA__</code> (requires <code>"schema": true</code> in object) is read-only for accessing the schema. Access to <code>__NEUTRAL_SCHEMA__</code> can be slow, it is faster to use parameters.</p>
 <p>It must return a dictionary where the variables are set in the format:</p>
 <div class="example-wrap"><pre class="language-text"><code>{
     &quot;data&quot;: {

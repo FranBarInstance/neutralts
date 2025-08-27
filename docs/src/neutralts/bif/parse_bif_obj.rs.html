@@ -390,7 +390,47 @@
 <a href="#389" id="389">389</a>
 <a href="#390" id="390">390</a>
 <a href="#391" id="391">391</a>
-<a href="#392" id="392">392</a></pre></div><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">"../../doc/bif-obj.md"</span>)]
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a></pre></div><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">"../../doc/bif-obj.md"</span>)]
 
 </span><span class="kw">use crate</span>::{
     bif::{Bif, BifError, PythonExecutor},
@@ -514,7 +554,11 @@
             <span class="kw-2">&amp;</span>file_path_obj,
             params,
             callback_name,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.shared.schema)
+            <span class="kw">if </span>obj.get(<span class="string">"schema"</span>).and_then(|v| v.as_bool()).unwrap_or(<span class="bool-val">false</span>) {
+                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.shared.schema)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">None
+            </span>}
         )<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>code = String::new();
@@ -726,6 +770,42 @@
         <span class="kw">let </span>result = template.render();
         <span class="macro">assert!</span>(template.has_error());
         <span class="macro">assert_eq!</span>(result, <span class="string">"&lt;div&gt;&lt;/div&gt;"</span>);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_bif_obj_schema_false() {
+        <span class="kw">let </span><span class="kw-2">mut </span>template = <span class="kw">match </span><span class="kw">crate</span>::Template::new() {
+            <span class="prelude-val">Ok</span>(tpl) =&gt; tpl,
+            <span class="prelude-val">Err</span>(error) =&gt; {
+                <span class="macro">println!</span>(<span class="string">"Error creating Template: {}"</span>, error);
+                <span class="macro">assert!</span>(<span class="bool-val">false</span>);
+                <span class="kw">return</span>;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(<span class="string">"&lt;div&gt;{:obj; {\"file\":\"tests/script.py\",\"schema\":false} &gt;&gt; {:;local::test_nts:} :}&lt;/div&gt;"</span>);
+        <span class="kw">let </span>result = template.render();
+        <span class="macro">assert!</span>(!template.has_error());
+        <span class="macro">assert_eq!</span>(result, <span class="string">"&lt;div&gt;&lt;/div&gt;"</span>);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_bif_obj_schema_true() {
+        <span class="kw">let </span><span class="kw-2">mut </span>template = <span class="kw">match </span><span class="kw">crate</span>::Template::new() {
+            <span class="prelude-val">Ok</span>(tpl) =&gt; tpl,
+            <span class="prelude-val">Err</span>(error) =&gt; {
+                <span class="macro">println!</span>(<span class="string">"Error creating Template: {}"</span>, error);
+                <span class="macro">assert!</span>(<span class="bool-val">false</span>);
+                <span class="kw">return</span>;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(<span class="string">"&lt;div&gt;{:obj; {\"file\":\"tests/script.py\",\"schema\":true} &gt;&gt; {:;local::test_nts:} :}&lt;/div&gt;"</span>);
+        <span class="kw">let </span>result = template.render();
+        <span class="macro">assert!</span>(!template.has_error());
+        <span class="macro">assert_eq!</span>(result, <span class="string">"&lt;div&gt;nts&lt;/div&gt;"</span>);
     }
 
     <span class="attr">#[test]
