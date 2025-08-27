@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT"],"enum":["Value"],"macro":["json"],"mod":["bif","block_parser","constants","default_json","doc","macros","shared","template","test_helpers","utils"],"struct":["Template"]};

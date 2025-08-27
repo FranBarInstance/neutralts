@@ -1,4 +1,4 @@
-![neutral](https://gitlab.com/neutralfw/neutralts/-/raw/master/top-neutralts.png)
+![neutral](https://raw.githubusercontent.com/FranBarInstance/neutralts/refs/heads/master/top-neutralts.png)
 
 Web Template Engine - Neutral TS
 ================================
@@ -15,7 +15,7 @@ In this simple PWA example, all three use exactly the same templates.
 
 (*) For non-Rust requires an IPC server that you can download from the [IPC repository](https://gitlab.com/neutralfw/ipc) - [IPC server](https://gitlab.com/neutralfw/ipc/-/releases). Alternatively in Python you can use [PYPI Package](https://pypi.org/project/neutraltemplate/)
 
-The documentation of the **web template** engine is here: [template engine doc](https://franbarinstance.github.io/neutralts/docs/neutralts/doc/) and **Rust** documentation here: [rust doc](https://docs.rs/neutralts/latest/neutralts/).
+The documentation of the **web template** engine is here: [template engine doc](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/) and **Rust** documentation here: [rust doc](https://docs.rs/neutralts/latest/neutralts/).
 
 Rust
 ----
@@ -561,4 +561,4 @@ Neutral TS template engine.
 - [Crate](https://crates.io/crates/neutralts)
 - [PYPI Package](https://pypi.org/project/neutraltemplate/)
 - [Example Web App](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app)
-- [Examples](https://gitlab.com/neutralfw/neutralts/-/tree/master/examples)
+- [Examples](https://franbarinstance.github.io/neutralts-docs/)

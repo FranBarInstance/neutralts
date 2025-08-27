@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SCHEMA","SCHEMA_CACHE"]};
