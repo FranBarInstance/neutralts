@@ -118,11 +118,7 @@ impl<'a> Bif<'a> {
                     self.out = new_child_parse!(self, &self.code, self.mod_scope);
                     self.inherit.in_cache = restore_in_cache;
                 }
-                return Err(BifError {
-                    msg: format!("Failed to read cache {}", file_path.display()),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                });
+                return Err(self.bif_error(&format!("Failed to read cache {}", file_path.display())));
             }
         } else {
             if self.code.contains(BIF_OPEN) {
@@ -141,27 +137,15 @@ impl<'a> Bif<'a> {
             match File::create(&file_path) {
                 Ok(mut file) => {
                     if let Err(e) = file.write_all(&self.code.as_bytes()) {
-                        return Err(BifError {
-                            msg: format!(
-                                "Failed to write to cache {}: {}",
-                                file_path.display(),
-                                e.to_string()
-                            ),
-                            name: self.alias.clone(),
-                            src: self.raw.to_string(),
-                        });
+                        return Err(self.bif_error(
+                            &format!("Failed to write to cache {}: {}",file_path.display(),e.to_string())
+                        ));
                     }
                 }
                 Err(e) => {
-                    return Err(BifError {
-                        msg: format!(
-                            "Failed to create file {}: {}",
-                            file_path.display(),
-                            e.to_string()
-                        ),
-                        name: self.alias.clone(),
-                        src: self.raw.to_string(),
-                    })
+                    return Err(self.bif_error(
+                        &format!("Failed to create file {}: {}",file_path.display(),e.to_string())
+                    ))
                 }
             }
         }
@@ -206,15 +190,9 @@ impl<'a> Bif<'a> {
         match fs::create_dir_all(cache_dir_levels) {
             Ok(_) => Ok(()),
             Err(e) => {
-                return Err(BifError {
-                    msg: format!(
-                        "Failed to create cache directory {}: {}",
-                        cache_dir,
-                        e.to_string()
-                    ),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error(
+                    &format!("Failed to create cache directory {}: {}", cache_dir, e.to_string())
+                ))
             }
         }
     }

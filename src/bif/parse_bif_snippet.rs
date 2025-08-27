@@ -53,11 +53,7 @@ impl<'a> Bif<'a> {
 
                 Ok(())
             } else {
-                Err(BifError {
-                    msg: "snippet cannot be set here".to_string(),
-                    name: self.alias.clone(),
-                    src: self.raw.to_string(),
-                })
+                return Err(self.bif_error("snippet cannot be set here"))
             }
         } else {
             // parse snippet name if need
