@@ -250,8 +250,8 @@ fn test_get_errors() {
     let result = template.render();
     let errors = template.get_error();
     assert!(template.has_error());
-    assert_eq!(errors[0], "Error (for) arguments not found src: {:for; n :}");
-    assert_eq!(errors[1], "The delimiter was not found: {:allow: none :}");
+    assert!(errors[0].to_string().contains("arguments not found"));
+    assert!(errors[1].to_string().contains("delimiter was not found"));
     assert_eq!(result, "<div></div>");
 }
 

@@ -26,6 +26,7 @@ impl PythonExecutor {
                 callback_name, e
             ),
             name: "python_callback".to_string(),
+            file: file.to_string(),
             src: file.to_string(),
         })
     }

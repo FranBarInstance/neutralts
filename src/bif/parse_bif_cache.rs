@@ -60,11 +60,8 @@ impl<'a> Bif<'a> {
         self.inherit.in_cache = restore_in_cache;
 
         // require expires
-        let expires = args.get(1).cloned().ok_or_else(|| BifError {
-            msg: "arguments 'expires' not found".to_string(),
-            name: self.alias.clone(),
-            src: self.raw.to_string(),
-        })?;
+        let expires = args.get(1).cloned().ok_or_else(|| self.bif_error("arguments 'expires' not found"))?;
+
 
         // optional id
         let mut id = args.get(2).cloned().unwrap_or("".to_string());

@@ -1,3 +1,6 @@
+//
+
+use chrono::Local;
 use crate::{
     json, Value,
     block_parser::BlockInherit,
@@ -51,6 +54,7 @@ pub use exec_python::PythonExecutor;
 
 pub(crate) struct BifError {
     pub(crate) msg: String,
+    pub(crate) file: String,
     pub(crate) name: String,
     pub(crate) src: String,
 }
@@ -205,7 +209,18 @@ impl<'a> Bif<'a> {
                 let show_error = self.shared.schema["config"]["error"]["show"]
                     .as_bool()
                     .unwrap();
-                let error_line = format!("Error ({}) {} src: {}", e.name, e.msg, e.src);
+
+                let datetime = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+
+                let error_line = format!(
+                    "[{}] Error ({}) {} file~: ({}) src: {}",
+                    datetime,
+                    e.name,
+                    e.msg,
+                    e.file,
+                    e.src
+                );
+
                 let error_line = error_line.replace(['\n', '\r'], " ");
 
                 if let Some(Value::Array(errors)) = self.shared.schema.get_mut("__error") {
@@ -414,6 +429,7 @@ impl<'a> Bif<'a> {
         BifError {
             msg: msg.to_string(),
             name: self.alias.clone(),
+            file: self.inherit.current_file.clone(),
             src: self.raw.to_string(),
         }
     }
