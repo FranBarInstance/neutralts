@@ -1,0 +1,67 @@
+#[cfg(test)]
+mod tests {
+    use crate::test_helpers::*;
+
+    #[test]
+    fn test_bif_date_timestamp() {
+        use std::time::SystemTime;
+        fn is_timestamp(value: u64) -> bool {
+            SystemTime::UNIX_EPOCH
+                .checked_add(std::time::Duration::from_secs(value))
+                .is_some()
+        }
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("{:date; :}");
+        let result = template.render().parse::<u64>().unwrap();
+
+        assert!(!template.has_error());
+        assert!(is_timestamp(result));
+    }
+
+    #[test]
+    fn test_bif_date() {
+        use chrono::{DateTime, Utc};
+        use std::str::FromStr;
+        pub fn is_valid_rfc3339(value: &str) -> bool {
+            DateTime::<Utc>::from_str(value).is_ok()
+        }
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("{:date; %Y-%m-%d %H:%M:%S :}");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert!(!is_valid_rfc3339(&result));
+    }
+
+    #[test]
+    fn test_bif_date_invalid_flag() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("{:date; {:flg; invalid_flag :} >> %Y-%m-%d %H:%M:%S :}");
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "");
+    }
+}

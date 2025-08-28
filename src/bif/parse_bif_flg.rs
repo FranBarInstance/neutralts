@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-flg.md")]
 
-use crate::{bif::Bif, bif::BifError, bif::constants::*, constants::*};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*};
 
 impl<'a> Bif<'a> {
     /*
@@ -31,41 +31,5 @@ impl<'a> Bif<'a> {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::test_helpers::*;
-
-    #[test]
-    fn test_bif_flg() {
-        let mut template = match crate::Template::new() {
-            Ok(tpl) => tpl,
-            Err(error) => {
-                println!("Error creating Template: {}", error);
-                assert!(false);
-                return;
-            }
-        };
-        template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:flg; any :}</div>");
-        let result = template.render();
-        assert!(!template.has_error());
-        assert_eq!(result, "<div></div>");
-    }
-
-    #[test]
-    fn test_bif_flg_no_flags() {
-        let mut template = match crate::Template::new() {
-            Ok(tpl) => tpl,
-            Err(error) => {
-                println!("Error creating Template: {}", error);
-                assert!(false);
-                return;
-            }
-        };
-        template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str("<div>{:flg; {:flg; any :} any >> :}</div>");
-        let result = template.render();
-        assert!(template.has_error());
-        assert_eq!(result, "<div></div>");
-    }
-
-}
+#[path = "parse_bif_flg_tests.rs"]
+mod tests;
