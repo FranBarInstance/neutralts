@@ -25,7 +25,7 @@ impl<'a> Bif<'a> {
             added_bif_code = true;
         }
 
-        self.extract_params_code(true);
+        self.extract_params_code(false);
 
         if added_bif_code {
             self.src.truncate(self.src.len() - BIF_CODE.len());
@@ -36,7 +36,11 @@ impl<'a> Bif<'a> {
         }
 
         let obj_raw;
-        if self.params.starts_with('{') && self.params.ends_with('}') {
+        if self.params.starts_with('{')
+            && self.params.ends_with('}')
+            && self.params.chars().nth(1) != Some(':')
+            && self.params.chars().nth(self.params.len() - 2) != Some(':')
+        {
             // json inline
             obj_raw = self.params.clone();
         } else {
