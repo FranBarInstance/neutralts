@@ -44,6 +44,10 @@ impl<'a> Bif<'a> {
             // json inline
             obj_raw = self.params.clone();
         } else {
+            if self.params.contains(BIF_OPEN) {
+                self.params = new_child_parse!(self, &self.params, false);
+            }
+
             self.file_path = self.params.clone();
 
             // For security requires {:allow;
