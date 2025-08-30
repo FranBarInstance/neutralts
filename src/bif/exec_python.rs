@@ -1,10 +1,12 @@
-// pyo3 = { version = "0.25.1", features = ["auto-initialize"] }
+// pyo3 = { version = "0.25.1", features = [] }
 
 use crate::{bif::BifError, Value};
 use pyo3::prelude::*;
 use pyo3::types::{PyList, PyModule};
 use pyo3::PyObject;
 use std::path::Path;
+use std::env;
+use std::process::Command;
 
 pub struct PythonExecutor;
 
@@ -14,7 +16,14 @@ impl PythonExecutor {
         params_value: &Value,
         callback_name: &str,
         schema: Option<&Value>,
+        venv_path: Option<&str>,
     ) -> Result<Value, BifError> {
+        if let Some(venv) = venv_path {
+            Self::setup_venv(venv)?;
+        }
+
+        pyo3::prepare_freethreaded_python();
+
         Python::with_gil(|py| -> PyResult<Value> {
             let params = Self::prepare_python_params(py, params_value)?;
             Self::setup_python_path(py, file)?;
@@ -29,6 +38,58 @@ impl PythonExecutor {
             file: file.to_string(),
             src: file.to_string(),
         })
+    }
+
+    fn setup_venv(venv_path: &str) -> Result<(), BifError> {
+        let path = Path::new(venv_path);
+        if !path.exists() {
+            return Err(BifError {
+                msg: format!("Venv path '{}' does not exist", venv_path),
+                name: "venv_error".to_string(),
+                file: "".to_string(),
+                src: "".to_string(),
+            });
+        }
+
+        let python_executable = if cfg!(unix) {
+            format!("{}/bin/python", venv_path)
+        } else {
+            format!("{}\\Scripts\\python.exe", venv_path)
+        };
+
+        if !Path::new(&python_executable).exists() {
+            return Err(BifError {
+                msg: format!("Python executable not found: {}", python_executable),
+                name: "venv_error".to_string(),
+                file: "".to_string(),
+                src: "".to_string(),
+            });
+        }
+
+        env::set_var("PYTHON_EXECUTABLE", &python_executable);
+        env::set_var("VIRTUAL_ENV", venv_path);
+
+        let output = Command::new(&python_executable)
+            .arg("-c")
+            .arg("import sys; print(sys.prefix); print(':'.join(sys.path))")
+            .output()
+            .map_err(|e| BifError {
+                msg: format!("Failed to get Python path info: {}", e),
+                name: "venv_error".to_string(),
+                file: "".to_string(),
+                src: "".to_string(),
+            })?;
+
+        if output.status.success() {
+            let output_str = String::from_utf8_lossy(&output.stdout);
+            let lines: Vec<&str> = output_str.trim().split('\n').collect();
+            if lines.len() >= 2 {
+                env::set_var("PYTHONHOME", lines[0]);
+                env::set_var("PYTHONPATH", lines[1]);
+            }
+        }
+
+        Ok(())
     }
 
     fn prepare_python_params<'py>(py: Python<'py>, params_value: &Value) -> PyResult<PyObject> {

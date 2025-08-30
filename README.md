@@ -3,7 +3,9 @@
 Web Template Engine - Neutral TS
 ================================
 
-Neutral is a **template engine** for the Web, an alternative to *handlebars*, designed to work with **any programming language** (language-agnostic) via IPC/Package and natively as library/crate in Rust.
+Neutral TS is a **safe, modular, language-agnostic template engine** built in Rust.
+It works as a **native Rust library** or via **IPC** for other languages like Python and PHP.
+With Neutral TS you can reuse the **same template across multiple languages** with consistent results.
 
 In this simple PWA example, all three use exactly the same templates.
 
@@ -326,6 +328,22 @@ Neutral TS template engine provides a basic JavaScript to perform simple `fetch`
 ```
 See: [fetch](https://docs.rs/neutralts/latest/neutralts/doc/#fetch--).
 
+Object
+------
+
+`obj` allows you to execute scripts in other languages like Python
+
+```html
+{:obj;
+    {
+        "engine": "Python",
+        "file": "script.py",
+        "template": "template.ntpl"
+    }
+:}
+```
+See: [obj](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#obj--).
+
 Web template - example
 ----------------------
 
@@ -512,7 +530,7 @@ status_param = template.get_status_param()
 ### Python examples
 
 - [PWA example IPC](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app/python)
-- [PWA example Package](https://github.com/FranBar1966/neutraltemplate/tree/master/examples)
+- [PWA example Package](https://github.com/FranBarInstance/neutraltemplate/tree/master/examples)
 - [Simple example](https://gitlab.com/neutralfw/neutralts/-/tree/master/examples/python)
 - [PYPI Package](https://pypi.org/project/neutraltemplate/)
 - [IPC client](https://gitlab.com/neutralfw/ipc/-/tree/master/python)
@@ -554,10 +572,10 @@ Links
 Neutral TS template engine.
 
 - [Rust docs](https://docs.rs/neutralts/latest/neutralts/)
-- [Template docs](https://docs.rs/neutralts/latest/neutralts/doc/)
+- [Template docs](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/)
 - [IPC server](https://gitlab.com/neutralfw/ipc/-/releases)
 - [IPC server and clients](https://gitlab.com/neutralfw/ipc)
-- [Repository](https://gitlab.com/neutralfw/neutralts)
+- [Repository](https://github.com/FranBarInstance/neutralts)
 - [Crate](https://crates.io/crates/neutralts)
 - [PYPI Package](https://pypi.org/project/neutraltemplate/)
 - [Example Web App](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app)

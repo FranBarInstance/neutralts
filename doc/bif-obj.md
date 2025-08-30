@@ -30,8 +30,9 @@ Example Object:
 ```json
 {
     "engine": "Python",          // Optional, default "Python"
-    "file": "script.py",         // Required, path to Python script
+    "file": "script.py",         // Required, path to script
     "schema": false              // Optional, default false
+    "venv": "/path/to/.env"      // Optional, default none
     "params": {},                // Optional, parameters passed to the script
     "callback": "main",          // Optional, default "main"
     "template": "template.ntpl"  // Optional, template to process the result

@@ -86,16 +86,31 @@ impl<'a> Bif<'a> {
             return Err(self.bif_error(BIF_ERROR_OBJ_FILE_NOT_FOUND));
         }
 
-        let params = &obj["params"];
-        let callback_name = obj["callback"].as_str().unwrap_or(DEFAULT_OBJ_CALLBACK);
+        let mut venv_path = obj["venv"].as_str().unwrap_or("").to_string();
+
+        if !venv_path.is_empty() {
+            if let Some(stripped) = venv_path.strip_prefix('#') {
+                venv_path = format!("{}{}", self.inherit.current_dir, stripped);
+            }
+
+            if !Path::new(&venv_path).exists() {
+                return Err(self.bif_error("venv path does not exist"));
+            }
+        }
+
         let result = PythonExecutor::exec_py(
             &file_path_obj,
-            params,
-            callback_name,
+            &obj["params"],
+            obj["callback"].as_str().unwrap_or(DEFAULT_OBJ_CALLBACK),
             if obj.get("schema").and_then(|v| v.as_bool()).unwrap_or(false) {
                 Some(&self.shared.schema)
             } else {
                 None
+            },
+            if venv_path.is_empty() {
+                None
+            } else {
+                Some(venv_path.as_str())
             },
         )?;
 
