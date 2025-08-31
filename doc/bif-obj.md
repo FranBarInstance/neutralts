@@ -23,6 +23,21 @@ JSON obj inline:
 :}
 ```
 
+JSON obj template inline:
+
+```html
+{:obj;
+    {
+        "engine": "Python",
+        "file": "script.py",
+        "params": {},
+        "callback": "main"
+    }
+    >>
+    {:;local::varname:}
+:}
+```
+
 The idea is to use a script that has its own template to assign values to the variables of that template. In a JSON file, an object with its properties, script to execute, template, etc., is defined.
 
 Example Object:
