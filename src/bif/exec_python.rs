@@ -1,9 +1,8 @@
-// pyo3 = { version = "0.25.1", features = [] }
+// pyo3 = { version = "0.26.0", features = [] }
 
 use crate::{bif::BifError, Value};
 use pyo3::prelude::*;
 use pyo3::types::{PyList, PyModule};
-use pyo3::PyObject;
 use std::path::Path;
 use std::env;
 use std::process::Command;
@@ -22,9 +21,9 @@ impl PythonExecutor {
             Self::setup_venv(venv)?;
         }
 
-        pyo3::prepare_freethreaded_python();
+        Python::initialize();
 
-        Python::with_gil(|py| -> PyResult<Value> {
+        Python::attach(|py| -> PyResult<Value> {
             let params = Self::prepare_python_params(py, params_value)?;
             Self::setup_python_path(py, file)?;
             Self::execute_python_callback(py, file, callback_name, params, schema)
@@ -92,14 +91,14 @@ impl PythonExecutor {
         Ok(())
     }
 
-    fn prepare_python_params<'py>(py: Python<'py>, params_value: &Value) -> PyResult<PyObject> {
+    fn prepare_python_params<'py>(py: Python<'py>, params_value: &Value) -> PyResult<Py<PyAny>> {
         let params_json = serde_json::to_string(params_value).map_err(|e| {
             pyo3::exceptions::PyValueError::new_err(format!("Failed to serialize params: {}", e))
         })?;
         let json_mod = PyModule::import(py, "json")?;
         let loads = json_mod.getattr("loads")?;
         let py_obj = loads.call1((params_json,))?;
-        let py_object: PyObject = py_obj.extract()?;
+        let py_object: Py<PyAny> = py_obj.extract()?;
         Ok(py_object)
     }
 
@@ -122,7 +121,7 @@ impl PythonExecutor {
         py: Python<'py>,
         file: &str,
         callback_name: &str,
-        params: PyObject,
+        params: Py<PyAny>,
         schema: Option<&Value>,
     ) -> PyResult<Value> {
         let module_name = Self::extract_module_name(file)?;
@@ -140,7 +139,7 @@ impl PythonExecutor {
             ))
         })?;
         let result_any = callback_func.call1((params,))?;
-        let result_obj: PyObject = result_any.extract()?;
+        let result_obj: Py<PyAny> = result_any.extract()?;
         Self::convert_python_result_to_json(py, result_obj)
     }
 
@@ -156,7 +155,7 @@ impl PythonExecutor {
             })
     }
 
-    fn convert_python_result_to_json<'py>(py: Python<'py>, result: PyObject) -> PyResult<Value> {
+    fn convert_python_result_to_json<'py>(py: Python<'py>, result: Py<PyAny>) -> PyResult<Value> {
         let json_module = PyModule::import(py, "json")?;
         let json_dumps = json_module.getattr("dumps")?;
         let json_string: String = json_dumps.call1((result,))?.extract()?;
