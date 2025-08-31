@@ -2,6 +2,7 @@
 /pruebas
 .directory
 .vscode
+.kilocodeignore
 /src/main.rs
 /helpers
 __pycache__/
