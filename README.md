@@ -15,7 +15,7 @@ In this simple PWA example, all three use exactly the same templates.
 - [PHP PWA example](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app/php)
 - [Template](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app/neutral)
 
-(*) For non-Rust requires an IPC server that you can download from the [IPC repository](https://gitlab.com/neutralfw/ipc) - [IPC server](https://gitlab.com/neutralfw/ipc/-/releases). Alternatively in Python you can use [PYPI Package](https://pypi.org/project/neutraltemplate/)
+(*) For non-Rust requires an IPC server that you can download from the [IPC repository](https://github.com/FranBarInstance/neutral-ipc) - [IPC server](https://github.com/FranBarInstance/neutral-ipc/releases). Alternatively in Python you can use [PYPI Package](https://pypi.org/project/neutraltemplate/)
 
 The documentation of the **web template** engine is here: [template engine doc](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/) and **Rust** documentation here: [rust doc](https://docs.rs/neutralts/latest/neutralts/).
 
@@ -46,7 +46,7 @@ let content = template.render();
 Safe
 ----
 
-Neutral TS template engine is developed in Rust, one of the most secure programming languages. It does not have access to the application's data; it cannot do so because it is designed this way. It implements security mechanisms like "allow," which prevent arbitrary files from being loaded into templates. See: [safety](https://docs.rs/neutralts/latest/neutralts/doc/#safety).
+Neutral TS template engine is developed in Rust, one of the most secure programming languages. It does not have access to the application's data; it cannot do so because it is designed this way. It implements security mechanisms like "allow," which prevent arbitrary files from being loaded into templates. See: [safety](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#safety).
 
 Template Engine - Features
 --------------------------
@@ -127,7 +127,7 @@ Now you can use:
 {:trans; Hello :}
 ```
 
-Actually you can always use "trans" because if there is no translation it returns the text.  See: [locale](https://docs.rs/neutralts/latest/neutralts/doc/#locale--) and [trans](https://docs.rs/neutralts/latest/neutralts/doc/#trans--).
+Actually you can always use "trans" because if there is no translation it returns the text.  See: [locale](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#locale--) and [trans](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#trans--).
 
 Bif layout (Build-in function)
 ------------------------------
@@ -154,7 +154,7 @@ Bif layout (Build-in function)
 
 ```
 
-Bif example: (See: [syntax](https://docs.rs/neutralts/latest/neutralts/doc/#syntax))
+Bif example: (See: [syntax](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#syntax))
 
 ```neutral
 {:filled; varname >>
@@ -264,7 +264,7 @@ From then on you can invoke it like this:
 {:snippet; name :}
 ```
 
-See: [snippet](https://docs.rs/neutralts/latest/neutralts/doc/#snippet--).
+See: [snippet](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#snippet--).
 
 Cache
 -----
@@ -326,7 +326,7 @@ Neutral TS template engine provides a basic JavaScript to perform simple `fetch`
     </body>
 </html>
 ```
-See: [fetch](https://docs.rs/neutralts/latest/neutralts/doc/#fetch--).
+See: [fetch](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#fetch--).
 
 Object
 ------
@@ -507,7 +507,7 @@ status_param = template.get_status_param()
 Python - IPC
 ------------
 
-Requires an IPC server that you can download from the [repository](https://gitlab.com/neutralfw/ipc), and an IPC client that you can download here: [IPC client](https://gitlab.com/neutralfw/ipc/-/tree/master/python)
+Requires an IPC server that you can download from the [repository](https://github.com/FranBarInstance/neutral-ipc), and an IPC client that you can download here: [IPC client](https://gitlab.com/neutralfw/ipc/-/tree/master/python)
 
 ```text
 from NeutralIpcTemplate import NeutralIpcTemplate
@@ -534,12 +534,12 @@ status_param = template.get_status_param()
 - [Simple example](https://gitlab.com/neutralfw/neutralts/-/tree/master/examples/python)
 - [PYPI Package](https://pypi.org/project/neutraltemplate/)
 - [IPC client](https://gitlab.com/neutralfw/ipc/-/tree/master/python)
-- [IPC server](https://gitlab.com/neutralfw/ipc)
+- [IPC server](https://github.com/FranBarInstance/neutral-ipc)
 
 PHP
 ---
 
-Requires an IPC server that you can download from the [repository](https://gitlab.com/neutralfw/ipc), and an IPC client that you can download here: [IPC client](https://gitlab.com/neutralfw/ipc/-/tree/master/php)
+Requires an IPC server that you can download from the [repository](https://github.com/FranBarInstance/neutral-ipc), and an IPC client that you can download here: [IPC client](https://gitlab.com/neutralfw/ipc/-/tree/master/php)
 
 ```text
 include 'NeutralIpcTemplate.php';
@@ -572,9 +572,9 @@ Links
 Neutral TS template engine.
 
 - [Rust docs](https://docs.rs/neutralts/latest/neutralts/)
-- [Template docs](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/)
-- [IPC server](https://gitlab.com/neutralfw/ipc/-/releases)
-- [IPC server and clients](https://gitlab.com/neutralfw/ipc)
+- [Template docs](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/)
+- [IPC server](https://github.com/FranBarInstance/neutral-ipc/releases)
+- [IPC server and clients](https://github.com/FranBarInstance/neutral-ipc)
 - [Repository](https://github.com/FranBarInstance/neutralts)
 - [Crate](https://crates.io/crates/neutralts)
 - [PYPI Package](https://pypi.org/project/neutraltemplate/)
