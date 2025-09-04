@@ -86,8 +86,6 @@ Similarly, Neutral TS has an IPC server, and each programming language has a cli
 
 Thanks to this, and to its modular and parameterizable design, it is possible to create utilities or plugins that will work everywhere. For example, you can develop tools to create forms or form fields and create your own libraries of "snippets" for repetitive tasks.
 
-A small example of a plugin: [countries form field](https://gitlab.com/neutralfw/neutralts/-/tree/master/examples/countries-form-field) and another one more practical: [plugin build-form](https://gitlab.com/neutralfw/neutralts/-/tree/master/plugins/build-form)
-
 Localization
 ------------
 
