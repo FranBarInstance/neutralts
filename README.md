@@ -7,38 +7,9 @@ Neutral TS is a **safe, modular, language-agnostic template engine** built in Ru
 It works as a **native Rust library** or via **IPC** for other languages like Python and PHP.
 With Neutral TS you can reuse the **same template across multiple languages** with consistent results.
 
-(*) For non-Rust requires an IPC server that you can download from the [IPC repository](https://github.com/FranBarInstance/neutral-ipc) - [IPC server](https://github.com/FranBarInstance/neutral-ipc/releases). Alternatively in Python you can use [PYPI Package](https://pypi.org/project/neutraltemplate/)
+For non-Rust requires an IPC server that you can download from the [IPC repository](https://github.com/FranBarInstance/neutral-ipc) - [IPC server](https://github.com/FranBarInstance/neutral-ipc/releases). Alternatively in Python you can use [PYPI Package](https://pypi.org/project/neutraltemplate/)
 
 The documentation of the **web template** engine is here: [template engine doc](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/) and **Rust** documentation here: [rust doc](https://docs.rs/neutralts/latest/neutralts/).
-
-Rust
-----
-
-In Rust it is enough with two methods, create the template with a file and a schema and then render:
-
-```text
-// Data
-let schema = json!({
-    "data": {
-        "hello": "Hello, World!",
-        "site": {
-            "name": "My Site"
-        }
-    }
-});
-
-// Create template
-// In file.ntpl use {:;hello:} and {:;site->name:} for show data.
-let template = Template::from_file_value("file.ntpl", schema).unwrap();
-
-// Render template
-let content = template.render();
-```
-
-Safe
-----
-
-Neutral TS template engine is developed in Rust, one of the most secure programming languages. It does not have access to the application's data; it cannot do so because it is designed this way. It implements security mechanisms like "allow," which prevent arbitrary files from being loaded into templates. See: [safety](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#safety).
 
 Template Engine - Features
 --------------------------
