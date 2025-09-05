@@ -52,6 +52,7 @@ It allows you to create templates compatible with any system and any programming
 * Efficient
 * Inheritance
 * Cache modular and !cache
+* Objects
 * JS fetch
 * Parse files
 * Embed files
