@@ -2,7 +2,7 @@
 name = "neutralts"
 description = "Neutral TS template engine is a web template designed to work with any programming language via IPC and natively as library/crate in Rust."
 license = "Apache-2.0"
-version = "1.3.0-beta3"
+version = "1.3.0-beta4"
 edition = "2021"
 homepage = "https://github.com/FranBarInstance/neutralts"
 repository = "https://github.com/FranBarInstance/neutralts"
