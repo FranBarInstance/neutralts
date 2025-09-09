@@ -6,7 +6,7 @@ use std::collections::HashSet;
 impl<'a> Bif<'a> {
     /*
         {:code; ...  :}
-        {:code; {:flags; safe noparse encode_tags encode_tags_after encode_bifs :} >>  <div>...</div>  :}
+        {:code; {:flg; safe noparse encode_tags encode_tags_after encode_bifs :} >>  <div>...</div>  :}
     */
     pub(crate) fn parse_bif_code(&mut self) -> Result<(), BifError> {
         if self.mod_filter || self.mod_negate {
