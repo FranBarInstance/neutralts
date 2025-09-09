@@ -28,6 +28,7 @@ It allows you to create templates compatible with any system and any programming
 * Parse files
 * Embed files
 * Localization
+* Debug
 * Loops: for and each
 * Snippets
 * Nesting, grouping and wrapping
@@ -305,6 +306,16 @@ Object
 :}
 ```
 See: [obj](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#obj--).
+
+Debug
+------
+
+Display debug information
+
+```html
+{:debug; data->varname :}
+```
+See: [debug](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#debug--).
 
 Web template - example
 ----------------------
