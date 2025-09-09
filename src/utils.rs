@@ -50,6 +50,41 @@ pub fn merge_schema(a: &mut Value, b: &Value) {
     }
 }
 
+/// Merge schema and update some keys
+///
+/// This is a thin wrapper around `merge_schema` that additionally:
+/// 1. Copies the value of the header key `requested-with-ajax` (all lower-case) into the
+///    variants `Requested-With-Ajax` (Pascal-Case) and `REQUESTED-WITH-AJAX` (upper-case),
+///    or vice-versa, depending on which variant is present in the incoming schema.
+/// 2. Overwrites the top-level `version` field with the compile-time constant `VERSION`.
+///
+/// The three header variants are created so that downstream code can read the header
+/// regardless of the casing rules enforced by the environment (HTTP servers, proxies, etc.).
+///
+/// # Arguments
+/// * `a` – the target `Value` (must be an `Object`) that will receive the merge result.
+/// * `b` – the source `Value` (must be an `Object`) whose contents are merged into `a`.
+///
+pub fn update_schema(a: &mut Value, b: &Value) {
+    merge_schema(a, b);
+
+    // Different environments may ignore or add capitalization in headers
+    let headers = &b["data"]["CONTEXT"]["HEADERS"];
+    if headers.get("requested-with-ajax").is_some() {
+        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = b["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = b["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
+    } else if headers.get("Requested-With-Ajax").is_some() {
+        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = b["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = b["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
+    } else if headers.get("REQUESTED-WITH-AJAX").is_some() {
+        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = b["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = b["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"].clone();
+    }
+
+    // Update version
+    a["version"] = VERSION.to_string().to_string().into();
+}
+
 /// Extract same level blocks positions.
 ///
 /// ```text

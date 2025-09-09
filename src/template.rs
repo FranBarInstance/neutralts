@@ -74,7 +74,7 @@ impl<'a> Template<'a> {
             }
         };
 
-        merge_schema(&mut default_schema, &schema);
+        update_schema(&mut default_schema, &schema);
         let shared = Shared::new(default_schema.clone());
 
         Ok(Template {
@@ -144,7 +144,7 @@ impl<'a> Template<'a> {
                 return Err("Is not a valid JSON file".to_string());
             }
         };
-        merge_schema(&mut self.schema, &schema_value);
+        update_schema(&mut self.schema, &schema_value);
 
         Ok(())
     }
@@ -166,7 +166,7 @@ impl<'a> Template<'a> {
                 return Err("Is not a valid JSON string".to_string());
             }
         };
-        merge_schema(&mut self.schema, &schema_value);
+        update_schema(&mut self.schema, &schema_value);
 
         Ok(())
     }
@@ -177,7 +177,7 @@ impl<'a> Template<'a> {
     ///
     /// * `schema` - The JSON Value to be merged with the current schema.
     pub fn merge_schema_value(&mut self, schema: Value) {
-        merge_schema(&mut self.schema, &schema);
+        update_schema(&mut self.schema, &schema);
     }
 
     /// Renders the template content.
