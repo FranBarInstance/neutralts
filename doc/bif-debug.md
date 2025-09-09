@@ -232,4 +232,13 @@ Prevent HTML tags from being parsed:
 ```text
 {:&debug; data :}
 ```
+
+Another way to prevent HTML, but be careful, in this case { and } are not escaped:
+
+```text
+{:code;  {:flg; encode_tags_after :} >>
+    {:debug; data :}
+:}
+```
+
 ---
