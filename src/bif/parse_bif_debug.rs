@@ -1,6 +1,12 @@
 #![doc = include_str!("../../doc/bif-debug.md")]
 
-use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*};
+use crate::{
+    bif::constants::*,
+    bif::Bif,
+    bif::BifError,
+    constants::*,
+    utils::*,
+};
 use std::fs;
 use std::path::Path;
 use std::time::{SystemTime, Duration};
@@ -10,7 +16,7 @@ impl<'a> Bif<'a> {
         {:debug; data->key :}
     */
     pub(crate) fn parse_bif_debug(&mut self) -> Result<(), BifError> {
-        if self.mod_filter || self.mod_scope {
+        if self.mod_scope {
             return Err(self.bif_error(BIF_ERROR_MODIFIER_NOT_ALLOWED));
         }
 
@@ -60,6 +66,12 @@ impl<'a> Bif<'a> {
             },
             None => format!("Undefined: '{}'", self.code),
         };
+
+        if self.mod_filter {
+            // unescape_chars for prevent double encoding
+            let tmp = unescape_chars(&self.out, true);
+            self.out = escape_chars(&tmp, true);
+        }
 
         Ok(())
     }

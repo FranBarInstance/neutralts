@@ -22,9 +22,10 @@ Stray debug bifs show an error message with a reminder to be removed in producti
 Modifiers:
 ----------
 
-```html
+```text
 {:^debug; ... :}
 {:!debug; ... :}
+{:&debug; ... :}
 ```
 ### Modifier: ^ (upline)
 
@@ -53,6 +54,21 @@ Although any key is ignored, it might be confusing to do this:
 
 ```html
 {:!debug; data->key :}
+```
+
+### Modifier: & (filter):
+
+Escapes special HTML characters and braces:
+
+```text
+& → &amp;
+< → &lt;
+> → &gt;
+" → &quot;
+' → &#x27;
+/ → &#x2F;
+{ → &#123;
+} → &#125;
 ```
 
 No flags
@@ -211,4 +227,9 @@ If cache is active, the output will also be saved to the cache. If you wish to a
 :}
 ```
 
+Prevent HTML tags from being parsed:
+
+```text
+{:&debug; data :}
+```
 ---
