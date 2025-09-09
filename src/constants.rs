@@ -1,5 +1,10 @@
 use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::env;
+
+/// neutralts version
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 
 ///  Bif delimiters
 ///

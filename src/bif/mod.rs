@@ -48,6 +48,7 @@ mod parse_bif_trans;
 mod parse_bif_unknown;
 mod parse_bif_var;
 mod parse_bif_obj;
+mod parse_bif_debug;
 
 mod exec_python;
 pub use exec_python::PythonExecutor;
@@ -200,6 +201,7 @@ impl<'a> Bif<'a> {
             "sum" => result = self.parse_bif_sum(),
             "trans" => result = self.parse_bif_trans(),
             "obj" => result = self.parse_bif_obj(),
+            "debug" => result = self.parse_bif_debug(),
             _ => result = self.parse_bif_unknown(),
         }
 

@@ -18,7 +18,9 @@ pub const DEFAULT: &str =r#"{
         "cache_on_cookies": true,
         "cache_disable": false,
         "filter_all": false,
-        "disable_js": false
+        "disable_js": false,
+        "debug_expire": 3600,
+        "debug_file": ""
     },
     "data": {
         "CONTEXT": {

@@ -237,6 +237,10 @@ impl<'a> Template<'a> {
             inherit.current_dir = self.shared.working_dir.clone();
         }
 
+        if !self.shared.debug_file.is_empty() {
+            eprintln!("WARNING: config->debug_file is not empty: {} (Remember to remove this in production)", self.shared.debug_file);
+        }
+
         inherit
     }
 

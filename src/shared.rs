@@ -25,6 +25,8 @@ pub(crate) struct Shared {
     pub(crate) cache_disable: bool,
     pub(crate) disable_js: bool,
     pub(crate) already_js: bool,
+    pub(crate) debug_expire: u64,
+    pub(crate) debug_file: String,
     pub(crate) working_dir: String,
 }
 
@@ -42,6 +44,8 @@ impl Shared {
         let cache_on_cookies= is_bool_key(&schema["config"], "cache_on_cookies");
         let cache_disable= is_bool_key(&schema["config"], "cache_disable");
         let disable_js= is_bool_key(&schema["config"], "disable_js");
+        let debug_expire = schema["config"]["debug_expire"].as_u64().unwrap();
+        let debug_file= get_from_key(&schema["config"], "debug_file");
         let mut filter_bifs = false;
 
         if !cache_disable {
@@ -75,6 +79,8 @@ impl Shared {
             cache_disable,
             disable_js,
             already_js: false,
+            debug_expire,
+            debug_file,
             working_dir,
         }
     }

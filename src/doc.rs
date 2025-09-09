@@ -36,6 +36,8 @@
 //!
 #![doc = include_str!("../doc/bif-date.md")]
 //!
+#![doc = include_str!("../doc/bif-debug.md")]
+//!
 #![doc = include_str!("../doc/bif-declare.md")]
 //!
 #![doc = include_str!("../doc/bif-defined.md")]
