@@ -54,7 +54,7 @@ pub fn merge_schema(a: &mut Value, b: &Value) {
 ///
 /// This is a thin wrapper around `merge_schema` that additionally:
 /// 1. Copies the value of the header key `requested-with-ajax` (all lower-case) into the
-///    variants `Requested-With-Ajax` (Pascal-Case) and `REQUESTED-WITH-AJAX` (upper-case),
+///    variants `Requested-With-Ajax` (Pascal-Case) and `REQUESTED_WITH_AJAX` (upper-case),
 ///    or vice-versa, depending on which variant is present in the incoming schema.
 /// 2. Overwrites the top-level `version` field with the compile-time constant `VERSION`.
 ///
@@ -72,13 +72,13 @@ pub fn update_schema(a: &mut Value, b: &Value) {
     let headers = &b["data"]["CONTEXT"]["HEADERS"];
     if headers.get("requested-with-ajax").is_some() {
         a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = b["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = b["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED_WITH_AJAX"] = b["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
     } else if headers.get("Requested-With-Ajax").is_some() {
         a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = b["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = b["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
-    } else if headers.get("REQUESTED-WITH-AJAX").is_some() {
-        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = b["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = b["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED_WITH_AJAX"] = b["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
+    } else if headers.get("REQUESTED_WITH_AJAX").is_some() {
+        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = b["data"]["CONTEXT"]["HEADERS"]["REQUESTED_WITH_AJAX"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = b["data"]["CONTEXT"]["HEADERS"]["REQUESTED_WITH_AJAX"].clone();
     }
 
     // Update version
