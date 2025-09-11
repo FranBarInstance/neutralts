@@ -7,8 +7,6 @@ Neutral TS is a **safe, modular, language-agnostic template engine** built in Ru
 It works as a **native Rust library** or via **IPC** for other languages like Python and PHP.
 With Neutral TS you can reuse the **same template across multiple languages** with consistent results.
 
-For non-Rust requires an IPC server that you can download from the [IPC repository](https://github.com/FranBarInstance/neutral-ipc) - [IPC server](https://github.com/FranBarInstance/neutral-ipc/releases). Alternatively in Python you can use [PYPI Package](https://pypi.org/project/neutraltemplate/)
-
 The documentation of the **web template** engine is here: [template engine doc](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/) and **Rust** documentation here: [rust doc](https://docs.rs/neutralts/latest/neutralts/).
 
 Template Engine - Features
@@ -39,17 +37,45 @@ It allows you to create templates compatible with any system and any programming
 How it works
 ------------
 
-Neutral TS template engine offers two main ways to integrate with other programming languages:
+Neutral TS supports two integration approaches:
 
-* In Rust: You can use Neutral TS template engine as a library by downloading the crate.
+### **Available Modes:**
+- **Rust**: Native library (crate) **or** IPC client (crate) + IPC server
+- **Python**: Native package **or** IPC client + IPC server
+- **Other languages** (PHP, etc.): IPC client + IPC server required
 
-* In other programming languages: Inter-Process Communication ([IPC](https://gitlab.com/neutralfw/ipc)) is necessary, similar to how databases like MariaDB work.
+### **The MySQL Analogy (IPC architecture):**
+Uses the exact same client-server mechanism as a database:
 
-Imagine a database. It has a server, and different programming languages access the data through a client. This means that if you run a "SELECT ..." query from any programming language, the result will always be the same.
+**MySQL:**
+- TCP server that receives SQL queries
+- Processes queries internally
+- Returns results to the client
 
-Similarly, Neutral TS has an IPC server, and each programming language has a client. No matter where you run the template, the result will always be the same.
+**Neutral TS:**
+- TCP server that receives templates + JSON data
+- Processes templates internally
+- Returns rendered HTML to the client
 
-Thanks to this, and to its modular and parameterizable design, it is possible to create utilities or plugins that will work everywhere. For example, you can develop tools to create forms or form fields and create your own libraries of "snippets" for repetitive tasks.
+### **Why It Works:**
+- **Same principle**: Lightweight client + Powerful server
+- **Universal protocol**: TCP + text/JSON (supported by all languages)
+- **Consistent results**: Same engine processes everything, guaranteeing identical output
+
+### **Security Advantage:**
+The IPC architecture provides important security benefits:
+- **Sandboxed execution**: Templates run in isolated processes
+- **Reduced attack surface**: Main application protected from template engine vulnerabilities
+- **Resource control**: Memory and CPU limits can be enforced at server level
+- **Crash containment**: Template engine failures don't affect the main application
+
+### **Key Advantage:**
+Just like an SQL query returns the same data from any language, a Neutral TS template returns the same HTML from Python, PHP, Rust... with added security isolation.
+
+### **IPC Components:**
+- **IPC Server**: Universal standalone application for all languages - download from: [IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
+- **IPC Clients**: Language-specific libraries to include in your project - available at: [IPC Clients](https://github.com/FranBarInstance/neutral-ipc/tree/master/clients)
+
 
 Localization
 ------------
