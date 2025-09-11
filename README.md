@@ -73,7 +73,7 @@ The IPC architecture provides important security benefits:
 Just like an SQL query returns the same data from any language, a Neutral TS template returns the same HTML from Python, PHP, Rust... with added security isolation.
 
 ### **IPC Components:**
-- **IPC Server**: Universal standalone application (Rust) for all languages - download from: [IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
+- **IPC Server**: Universal standalone application (written in Rust) for all languages - download from: [IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
 - **IPC Clients**: Language-specific libraries to include in your project - available at: [IPC Clients](https://github.com/FranBarInstance/neutral-ipc/tree/master/clients)
 
 
