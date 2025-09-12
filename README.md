@@ -469,6 +469,80 @@ let status_param = template.get_status_param();
 // act accordingly at this point according to your framework
 ```
 
+Python - Package
+----------------
+
+```text
+pip install neutraltemplate
+```
+
+```text
+from neutraltemplate import NeutralTemplate
+
+template = NeutralTemplate("file.ntpl", schema)
+contents = template.render()
+
+# e.g.: 200
+status_code = template.get_status_code()
+
+# e.g.: OK
+status_text = template.get_status_text()
+
+# empty if no error
+status_param = template.get_status_param()
+
+# act accordingly at this point according to your framework
+```
+
+Python - IPC
+------------
+
+- Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
+- Requires the Python IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc/clients)
+
+```text
+from NeutralIpcTemplate import NeutralIpcTemplate
+
+template = NeutralIpcTemplate("file.ntpl", schema)
+contents = template.render()
+
+# e.g.: 200
+status_code = template.get_status_code()
+
+# e.g.: OK
+status_text = template.get_status_text()
+
+# empty if no error
+status_param = template.get_status_param()
+
+# act accordingly at this point according to your framework
+```
+
+PHP
+---
+
+- Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
+- Requires the Python IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc/clients)
+
+
+```text
+include 'NeutralIpcTemplate.php';
+
+$template = new NeutralIpcTemplate("file.ntpl", $schema);
+$contents = $template->render();
+
+// e.g.: 200
+$status_code = $template->get_status_code();
+
+// e.g.: OK
+$status_text = $template->get_status_text();
+
+// empty if no error
+$status_param = $template->get_status_param();
+
+// act accordingly at this point according to your framework
+```
+
 Neutral TS template engine.
 
 - [Rust docs](https://docs.rs/neutralts/latest/neutralts/)
