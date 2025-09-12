@@ -3,19 +3,9 @@
 Rust Web Template Engine
 ========================
 
-Neutral is a **template engine** for the Web, an alternative to *handlebars*, designed to work with **any programming language** (language-agnostic) via IPC/Package and natively as library/crate in Rust.
+Neutral TS is a **safe, modular, language-agnostic template engine** built in Rust. It works as a **native Rust library** or via **IPC** for other languages like Python and PHP. With Neutral TS you can reuse the **same template across multiple languages** with consistent results.
 
-In this simple PWA example, all three use exactly the same templates.
-
-- [Rust PWA example](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app/rust)
-- [Python PWA example IPC](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app/python)
-- [Python PWA example Package](https://github.com/FranBar1966/neutraltemplate/tree/master/examples)
-- [PHP PWA example](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app/php)
-- [Template](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app/neutral)
-
-(*) For non-Rust requires an IPC server that you can download from the [IPC repository](https://gitlab.com/neutralfw/ipc) - [IPC server](https://gitlab.com/neutralfw/ipc/-/releases). Alternatively in Python you can use [PYPI Package](https://pypi.org/project/neutraltemplate/)
-
-The documentation of the **web template** engine is here: [template engine doc](https://docs.rs/neutralts/latest/neutralts/doc/) and **Rust** documentation here: [rust doc](https://docs.rs/neutralts/latest/neutralts/).
+Examples for [Rust](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/rust), [Python](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/python), [PHP](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/php), [Node.js](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/node) and [Go](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/go) here: [download](https://github.com/FranBarInstance/neutralts-docs/releases). All PWA [examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples) use the same template: [Neutral templates](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/neutral).
 
 Rust
 ----
@@ -45,13 +35,12 @@ Links
 -----
 
 - [Rust docs](https://docs.rs/neutralts/latest/neutralts/)
-- [Template docs](https://docs.rs/neutralts/latest/neutralts/doc/)
-- [IPC server](https://gitlab.com/neutralfw/ipc/-/releases)
-- [IPC server and clients](https://gitlab.com/neutralfw/ipc)
-- [Repository](https://gitlab.com/neutralfw/neutralts)
+- [Template docs](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/)
+- [IPC server](https://github.com/FranBarInstance/neutral-ipc/releases)
+- [IPC clients](https://github.com/FranBarInstance/neutral-ipc/tree/master/clients)
+- [Repository](https://github.com/FranBarInstance/neutralts)
 - [Crate](https://crates.io/crates/neutralts)
 - [PYPI Package](https://pypi.org/project/neutraltemplate/)
-- [Example Web App](https://gitlab.com/neutralfw/neutralts/-/tree/master/web-app)
-- [Examples](https://gitlab.com/neutralfw/neutralts/-/tree/master/examples)
+- [Examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples)
 
 ------
