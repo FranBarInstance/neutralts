@@ -14,7 +14,9 @@ The `schema` is a JSON where we define the data that will represent the template
         "cache_on_cookies": true,
         "cache_disable": false,
         "filter_all": false,
-        "disable_js": false
+        "disable_js": false,
+        "debug_expire": 3600,
+        "debug_file": ""
     },
     "inherit": {
         "locale": {
