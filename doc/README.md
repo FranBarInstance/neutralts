@@ -36,11 +36,8 @@ Links
 
 - [Rust docs](https://docs.rs/neutralts/latest/neutralts/)
 - [Template docs](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/)
-- [IPC server](https://github.com/FranBarInstance/neutral-ipc/releases)
-- [IPC clients](https://github.com/FranBarInstance/neutral-ipc/tree/master/clients)
+- [IPC server/clients](https://github.com/FranBarInstance/neutral-ipc/)
 - [Repository](https://github.com/FranBarInstance/neutralts)
-- [Crate](https://crates.io/crates/neutralts)
-- [PYPI Package](https://pypi.org/project/neutraltemplate/)
-- [Examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples)
+- [Examples/Docs](https://github.com/FranBarInstance/neutralts-docs/)
 
 ------
