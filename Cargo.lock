@@ -263,7 +263,7 @@ dependencies = [
 
 [[package]]
 name = "neutralts"
-version = "1.3.0-beta7"
+version = "1.3.0"
 dependencies = [
  "chrono",
  "lazy_static",
