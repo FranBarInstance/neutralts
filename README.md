@@ -498,7 +498,7 @@ Python - IPC
 ------------
 
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
-- Requires the Python IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc/clients)
+- Requires the Python IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
 ```text
 from NeutralIpcTemplate import NeutralIpcTemplate
@@ -522,7 +522,7 @@ PHP
 ---
 
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
-- Requires the Python IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc/clients)
+- Requires the Python IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
 
 ```text
