@@ -40,7 +40,7 @@ How it works
 Neutral TS supports two integration approaches:
 
 ### **Available Modes:**
-- **Rust**: Native library (crate)
+- **Rust**: Native library (crate) **or** IPC client (crate) + IPC server
 - **Python**: Native package **or** IPC client + IPC server
 - **Other languages** (PHP, etc.): IPC client + IPC server required
 
@@ -61,6 +61,8 @@ Uses the exact same client-server mechanism as a database:
 - **Same principle**: Lightweight client + Powerful server
 - **Universal protocol**: TCP + text/JSON (supported by all languages)
 - **Consistent results**: Same engine processes everything, guaranteeing identical output
+- **Minimal dependencies**: IPC clients are extremely lightweight with minimal external dependencies
+- **Easy updates**: No application recompilation needed - simply update the IPC server for engine improvements
 
 ### **Security Advantage:**
 The IPC architecture provides important security benefits:
@@ -68,9 +70,19 @@ The IPC architecture provides important security benefits:
 - **Reduced attack surface**: Main application protected from template engine vulnerabilities
 - **Resource control**: Memory and CPU limits can be enforced at server level
 - **Crash containment**: Template engine failures don't affect the main application
+- **Zero-downtime updates**: IPC server can be updated independently without restarting client applications
 
 ### **Key Advantage:**
 Just like an SQL query returns the same data from any language, a Neutral TS template returns the same HTML from Python, PHP, Rust... with added security isolation.
+
+### **Performance Consideration:**
+The IPC approach introduces performance overhead due to inter-process communication. The impact varies depending on:
+
+- Application type
+- Programming language
+- Network latency
+
+For most web applications, the security and interoperability benefits compensate for the performance overhead.
 
 ### **IPC Components:**
 - **IPC Server**: Universal standalone application (written in Rust) for all languages - download from: [IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
