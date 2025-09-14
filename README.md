@@ -40,7 +40,7 @@ How it works
 Neutral TS supports two integration approaches:
 
 ### **Available Modes:**
-- **Rust**: Native library (crate) **or** IPC client (crate) + IPC server
+- **Rust**: Native library ([crate](https://crates.io/crates/neutralts)) **or** IPC client ([crate](https://crates.io/crates/neutralipcrs)) + IPC server
 - **Python**: Native package **or** IPC client + IPC server
 - **Other languages** (PHP, etc.): IPC client + IPC server required
 
