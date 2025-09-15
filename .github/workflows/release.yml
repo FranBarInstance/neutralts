@@ -17,7 +17,7 @@ jobs:
       - name: Create Release with Auto Changelog
         uses: softprops/action-gh-release@v1
         with:
-          generate_release_notes: true  # GitHub generates changelog automatically
+          generate_release_notes: true
           draft: false
           prerelease: false
           body: |
