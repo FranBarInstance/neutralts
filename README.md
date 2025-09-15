@@ -538,24 +538,6 @@ PHP
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
 - Requires the PHP IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
-```text
-include 'NeutralIpcTemplate.php';
-
-$template = new NeutralIpcTemplate("file.ntpl", $schema);
-$contents = $template->render();
-
-// e.g.: 200
-$status_code = $template->get_status_code();
-
-// e.g.: OK
-$status_text = $template->get_status_text();
-
-// empty if no error
-$status_param = $template->get_status_param();
-
-// act accordingly at this point according to your framework
-```
-
 Node.js
 -------
 
