@@ -568,7 +568,8 @@ Go
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
 - Requires the Go IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
-Neutral TS template engine.
+Neutral TS template engine
+--------------------------
 
 - [Rust docs](https://docs.rs/neutralts/latest/neutralts/)
 - [Template docs](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/)
