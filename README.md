@@ -534,7 +534,7 @@ PHP
 ---
 
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
-- Requires the Python IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
+- Requires the PHP IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
 
 ```text
