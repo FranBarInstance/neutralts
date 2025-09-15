@@ -538,7 +538,6 @@ PHP
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
 - Requires the PHP IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
-
 ```text
 include 'NeutralIpcTemplate.php';
 
@@ -556,6 +555,18 @@ $status_param = $template->get_status_param();
 
 // act accordingly at this point according to your framework
 ```
+
+Node.js
+-------
+
+- Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
+- Requires the Node IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
+
+Go
+--
+
+- Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
+- Requires the Go IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
 Neutral TS template engine.
 
