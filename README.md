@@ -462,6 +462,8 @@ Or for array:
 Native use (Rust)
 -----------------
 
+Alternatively, you can use: [Neutral TS Rust IPC Client](https://crates.io/crates/neutralipcrs)
+
 ```text
 use neutralts::Template;
 use serde_json::json;
