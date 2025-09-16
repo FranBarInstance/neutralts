@@ -482,6 +482,8 @@ let status_param = template.get_status_param();
 
 // act accordingly at this point according to your framework
 ```
+[Rust examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/rust)
+
 
 Python - Package
 ----------------
@@ -507,6 +509,8 @@ status_param = template.get_status_param()
 
 # act accordingly at this point according to your framework
 ```
+[Python examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/python)
+
 
 Python - IPC
 ------------
@@ -531,6 +535,8 @@ status_param = template.get_status_param()
 
 # act accordingly at this point according to your framework
 ```
+[Python examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/python)
+
 
 PHP
 ---
@@ -538,17 +544,23 @@ PHP
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
 - Requires the PHP IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
+[PHP examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/php)
+
 Node.js
 -------
 
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
 - Requires the Node IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
 
+[Node.js examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/node)
+
 Go
 --
 
 - Requires the IPC server: [Neutral TS IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
 - Requires the Go IPC client: [Neutral TS IPC Clients](https://github.com/FranBarInstance/neutral-ipc)
+
+[Go examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/go)
 
 Neutral TS template engine
 --------------------------
