@@ -61,7 +61,7 @@ Can be nested (no limit):
 Blocks
 ------
 
-Each *block* can be a single Bif, or a nested set of them:
+Each *block* can be a single BIF, or a nested set of them:
 
 ```html
                 {:coalesce;
@@ -106,7 +106,7 @@ If the variable with spaces was nested, then the result would be an empty block,
 :}
 ```
 
-Unprintable Bif {:;:} is not a zero length string, the following will show nothing:
+Unprintable BIF {:;:} is not a zero length string, the following will show nothing:
 
 ```html
 {:coalesce;

@@ -106,7 +106,7 @@ Output:
 <div>Hello</div>
 ```
 
-But in special cases we may need to make it so that spaces or carriage returns are not removed. And this is the main use of unprintable Bif:
+But in special cases we may need to make it so that spaces or carriage returns are not removed. And this is the main use of unprintable BIF:
 
 ```text
 <pre>

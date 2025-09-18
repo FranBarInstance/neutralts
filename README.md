@@ -130,7 +130,7 @@ Now you can use:
 
 Actually you can always use "trans" because if there is no translation it returns the text.  See: [locale](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#locale--) and [trans](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#trans--).
 
-Bif layout (Build-in function)
+BIF Structure (Built-in function)
 ------------------------------
 
 ```neutral
@@ -151,11 +151,11 @@ Bif layout (Build-in function)
             |         ^
             |         |
             |         `-- source
-            `-- Build-in function
+            `-- Built-in function
 
 ```
 
-Bif example: (See: [syntax](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#syntax))
+BIF example: (See: [syntax](https://franbarinstance.github.io/neutralts-docs/docs/neutralts/doc/#syntax))
 
 ```neutral
 {:filled; varname >>
@@ -163,7 +163,7 @@ Bif example: (See: [syntax](https://franbarinstance.github.io/neutralts-docs/doc
 :}
 ```
 
-Neutral TS template engine is based on Bifs with block structure, we call the set of nested Bifs of the same level a block:
+Neutral TS template engine is based on BIFs with block structure, we call the set of nested BIFs of the same level a block:
 
 ```neutral
 
@@ -203,7 +203,7 @@ Short circuit at block level, if varname is not defined, the following ">>" is n
 :}
 ```
 
-By design all Bifs can be nested and there can be a Bif anywhere in another Bif except in the name.
+By design all BIFs can be nested and there can be a BIF anywhere in another BIF except in the name.
 
 Data
 ----

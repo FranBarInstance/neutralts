@@ -1,9 +1,9 @@
 Syntax
 ======
 
-The main element of Neutral TS is the BIF (Build-in function), would be the equivalent of functions and would display an output, the output is always a string or nothing (empty string).
+The main element of Neutral TS is the BIF (Built-in function), would be the equivalent of functions and would display an output, the output is always a string or nothing (empty string).
 
-### Bif layout
+### BIF Structure
 
 ```text
 
@@ -32,11 +32,11 @@ The main element of Neutral TS is the BIF (Build-in function), would be the equi
  ------------------------------------------
                      ^
                      |
-                     ·-- Bif (Build-in function)
+                     ·-- BIF (Built-in function)
 
 ```
 
-Bif example:
+BIF example:
 
 ```text
 {:filled; varname >>
@@ -50,7 +50,7 @@ Sometimes they only carry parameters or code:
 {:snippet; snipname :}
 ```
 
-Any number of spaces can be used to separate each part of a bif except the name, the following is an error:
+Any number of spaces can be used to separate each part of a BIF except the name, the following is an error:
 
 ```diff
 -{: filled ; varname >>
@@ -158,7 +158,7 @@ They can be nested, but different delimiters must be used:
 Nesting
 -------
 
-By design all Bifs can be nested and there can be a Bif anywhere in another Bif except in the name.
+By design all BIFs can be nested and there can be a BIF anywhere in another BIF except in the name.
 
 ```text
 {:eval; {:code; {:code; ... :} :} >>
