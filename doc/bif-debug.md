@@ -84,7 +84,7 @@ The file name and expiration are set in the "schema" configuration:
 ```text
 {
     "config": {
-        "debug_expire": 36000,
+        "debug_expire": 3600,
         "debug_file": ""
     }
 }
