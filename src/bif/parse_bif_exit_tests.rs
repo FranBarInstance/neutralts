@@ -340,4 +340,25 @@ mod tests {
         assert!(template.has_error());
         assert_eq!(template.get_status_code(), "200");
     }
+
+    #[test]
+    fn test_bif_exit_301_parse_url() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str("<div>{:exit; 301 >> /home?{:;__test-nts:} :}</div>");
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(template.get_status_code(), "301");
+        assert_eq!(template.get_status_text(), "Moved Permanently");
+        assert_eq!(template.get_status_param(), "/home?nts");
+        assert_eq!(result, "301 Moved Permanently\n/home?nts");
+    }
+
 }
