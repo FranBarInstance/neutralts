@@ -27,7 +27,7 @@ impl<'a> Bif<'a> {
         }
 
         if self.code.contains(BIF_OPEN) {
-            self.code = new_child_parse!(self, &self.src, false);
+            self.code = new_child_parse!(self, &self.code, false);
         }
 
         let mut status_code = "200";
