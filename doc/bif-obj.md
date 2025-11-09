@@ -46,15 +46,15 @@ Example Object:
 {
     "engine": "Python",          // Optional, default "Python"
     "file": "script.py",         // Required, path to script
-    "schema": false              // Optional, default false
-    "venv": "/path/to/.env"      // Optional, default none
+    "schema": false,             // Optional, default false
+    "venv": "/path/to/.env",     // Optional, default none
     "params": {},                // Optional, parameters passed to the script
     "callback": "main",          // Optional, default "main"
     "template": "template.ntpl"  // Optional, template to process the result
 }
 ```
 
-The keys "file", "params" and "template" accept variables `{:;varname:}`
+The keys "file", "params", "venv" and "template" accept variables `{:;varname:}`
 
 Example Script:
 
