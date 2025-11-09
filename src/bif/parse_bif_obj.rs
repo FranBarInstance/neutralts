@@ -145,7 +145,7 @@ impl<'a> Bif<'a> {
     fn parse_obj_values(&mut self, value: &mut Value, is_recursive_call: bool) {
         if let Value::Object(map) = value {
             for (key, val) in map.iter_mut() {
-                if key == "file" || key == "template" {
+                if key == "file" || key == "template" || key == "venv" {
                     if let Value::String(s) = val {
                         if s.contains(BIF_OPEN) {
                             *val = Value::String(new_child_parse!(self, s, false));
