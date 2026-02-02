@@ -127,6 +127,11 @@ impl PythonExecutor {
         let module_name = Self::extract_module_name(file)?;
         let module = PyModule::import(py, &module_name)?;
 
+        // https://github.com/FranBarInstance/neutralts/issues/2
+        if module.hasattr("__NEUTRAL_SCHEMA__")? {
+            module.delattr("__NEUTRAL_SCHEMA__")?;
+        }
+
         if let Some(schema_value) = schema {
             let schema_py = Self::prepare_python_params(py, schema_value)?;
             module.setattr("__NEUTRAL_SCHEMA__", schema_py)?;

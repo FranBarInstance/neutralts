@@ -192,6 +192,13 @@ mod tests {
         assert_eq!(result, "<div></div>");
     }
 
+    // https://github.com/FranBarInstance/neutralts/issues/2
+    #[test]
+    fn test_bif_obj_schema_true_first() {
+        test_bif_obj_schema_true();
+        test_bif_obj_schema_false();
+    }
+
     #[test]
     fn test_bif_obj_schema_true() {
         let mut template = match crate::Template::new() {
