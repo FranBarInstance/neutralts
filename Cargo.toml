@@ -13,7 +13,7 @@ categories = ["template-engine", "web-programming"]
 [dependencies]
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = { version = "1.0.143", features = ["preserve_order"] }
-pyo3 = { version = "0.26.0", features = [] }
+pyo3 = { version = "0.28.0", features = [] }
 regex = "1.11.2"
 sha2 = "0.10.9"
 chrono = "0.4.41"

@@ -106,7 +106,7 @@ impl PythonExecutor {
         let dir_path = Path::new(file).parent().unwrap_or_else(|| Path::new("."));
         let sys = PyModule::import(py, "sys")?;
         let path_attr = sys.getattr("path")?;
-        let path = path_attr.downcast::<PyList>()?;
+        let path = path_attr.cast::<PyList>()?;
         if let Some(dir_str) = dir_path.to_str() {
             path.append(dir_str)?;
         } else {
