@@ -350,7 +350,7 @@ pub fn is_defined_key(schema: &Value, key: &str) -> bool {
 }
 
 /// Helper function to resolve a pointer-like key (e.g., "a->b->0") in a JSON Value.
-fn resolve_pointer<'a>(schema: &'a Value, key: &str) -> Option<&'a Value> {
+pub(crate) fn resolve_pointer<'a>(schema: &'a Value, key: &str) -> Option<&'a Value> {
     if !key.contains(BIF_ARRAY) && !key.contains('/') {
         return schema.get(key);
     }
@@ -401,6 +401,10 @@ fn resolve_pointer<'a>(schema: &'a Value, key: &str) -> Option<&'a Value> {
 ///              ------------ -- ------------------------------
 ///  {:!snippet; snippet_name >> <div>... {:* ... *:} ...</div> :}
 pub fn get_code_position(src: &str) -> Option<usize> {
+    if !src.contains(BIF_CODE) {
+        return None;
+    }
+
     let mut level = 0;
     src.as_bytes()
         .windows(2)
