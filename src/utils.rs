@@ -191,19 +191,7 @@ pub fn extract_blocks(raw_source: &str) -> Result<Vec<(usize, usize)>, usize> {
     Ok(blocks)
 }
 
-fn find_bytes(bytes: &[u8], substring: &[u8], start_pos: usize) -> Option<usize> {
-    let bytes_len = bytes.len();
-    let subs_len = substring.len();
 
-    if start_pos >= bytes_len || subs_len == 0 || start_pos + subs_len > bytes_len {
-        return None;
-    }
-
-    bytes[start_pos..]
-        .windows(subs_len)
-        .position(|window| window == substring)
-        .map(|pos| pos + start_pos)
-}
 
 /// Removes a prefix and suffix from a string slice.
 ///
@@ -400,22 +388,31 @@ pub fn get_code_position(src: &str) -> Option<usize> {
     }
 
     let mut level = 0;
-    src.as_bytes()
-        .windows(2)
-        .enumerate()
-        .find(|&(_, window)| match window {
-            x if x == BIF_OPEN_B => {
-                level += 1;
-                false
+    let bytes = src.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i + 1 < len {
+        let b0 = bytes[i];
+        let b1 = bytes[i + 1];
+
+        if b0 == BIF_OPEN_B[0] && b1 == BIF_OPEN_B[1] {
+            level += 1;
+            i += 2;
+        } else if b0 == BIF_CLOSE_B[0] && b1 == BIF_CLOSE_B[1] {
+            level -= 1;
+            i += 2;
+        } else if b0 == BIF_CODE_B[0] && b1 == BIF_CODE_B[1] {
+            if level == 0 {
+                return Some(i);
             }
-            x if x == BIF_CLOSE_B => {
-                level -= 1;
-                false
-            }
-            x if x == BIF_CODE_B && level == 0 => true,
-            _ => false,
-        })
-        .map(|(i, _)| i)
+            i += 2;
+        } else {
+            i += 1;
+        }
+    }
+
+    None
 }
 
 /// Removes comments from the template source.
@@ -426,16 +423,17 @@ pub fn remove_comments(raw_source: &str) -> String {
     let mut curr_pos: usize = 0;
     let mut open_pos: usize;
     let mut nested_comment = 0;
-    let len_open = BIF_OPEN_B.len();
+    let len_open = BIF_COMMENT_OPEN_B.len();
     let len_close = BIF_CLOSE_B.len();
     let len_src = bytes.len();
 
-    while let Some(pos) = find_bytes(bytes, BIF_COMMENT_OPEN_B, curr_pos) {
-        curr_pos = pos + len_open;
-        open_pos = pos;
+    while let Some(rel_pos) = raw_source[curr_pos..].find(BIF_COMMENT_OPEN) {
+        let absolute_pos = curr_pos + rel_pos;
+        curr_pos = absolute_pos + len_open;
+        open_pos = absolute_pos;
 
-        while let Some(pos) = find_bytes(bytes, BIF_DELIM_B, curr_pos) {
-            curr_pos = pos;
+        while let Some(delim_pos_rel) = raw_source[curr_pos..].find(BIF_DELIM) {
+            curr_pos += delim_pos_rel;
 
             if curr_pos >= len_src {
                 break;

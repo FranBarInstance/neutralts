@@ -109,7 +109,7 @@ impl<'a> Bif<'a> {
         }
 
         let mut block_parser =
-            crate::block_parser::BlockParser::new(self.shared, &child_inherit);
+            crate::block_parser::BlockParser::new(self.shared, child_inherit);
         let code = block_parser.parse_with_blocks(&self.code, blocks, self.only);
 
         if self.mod_scope {

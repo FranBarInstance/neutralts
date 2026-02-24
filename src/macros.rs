@@ -58,7 +58,7 @@ mod macros {
                 $self.inherit.create_block_schema(shared);
             }
 
-            let mut block = $crate::block_parser::BlockParser::new(shared, &child_inherit);
+            let mut block = $crate::block_parser::BlockParser::new(shared, child_inherit);
             let code = block.parse($source, $self.only);
 
             // Update this block with the data generated in the child

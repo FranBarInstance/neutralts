@@ -25,8 +25,8 @@ impl<'a> Bif<'a> {
         if self.code.is_empty() {
             let mut hasher = Md5::new();
             let mut rng = rand::rng();
-            let rand = rng.random_range(100000000..=999999999).to_string();
-            hasher.update(&rand);
+            let random_bytes: [u8; 16] = rng.random();
+            hasher.update(random_bytes);
             self.out = format!("{:x}", hasher.finalize())
         } else {
             let mut hasher = Md5::new();

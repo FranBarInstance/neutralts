@@ -285,11 +285,11 @@ impl<'a> Template<'a> {
     /// The rendered template content as a string.
     pub fn render(&mut self) -> String {
         let inherit = self.init_render();
-        self.out = BlockParser::new(&mut self.shared, &inherit).parse(&self.raw, "");
+        self.out = BlockParser::new(&mut self.shared, inherit.clone()).parse(&self.raw, "");
 
         while self.out.contains("{:!cache;") {
             let out;
-            out = BlockParser::new(&mut self.shared, &inherit).parse(&self.out, "!cache");
+            out = BlockParser::new(&mut self.shared, inherit.clone()).parse(&self.out, "!cache");
             self.out = out;
         }
 

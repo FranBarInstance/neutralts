@@ -114,8 +114,7 @@ impl Drop for BlockParser<'_> {
 }
 
 impl<'a> BlockParser<'a> {
-    pub(crate) fn new(shared: &'a mut Shared, inherit: &BlockInherit) -> Self {
-        let mut inherit = inherit.clone();
+    pub(crate) fn new(shared: &'a mut Shared, mut inherit: BlockInherit) -> Self {
         inherit.block_count += 1;
 
         BlockParser {
