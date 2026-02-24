@@ -596,6 +596,16 @@ pub fn find_tag_position(text: &str, tag: &str) -> Option<usize> {
 /// assert_eq!(escaped, r#"Hello, &lt;world&gt; &amp; &quot;friends&quot;! &#123;example&#125;"#);
 /// ```
 pub fn escape_chars(input: &str, escape_braces: bool) -> String {
+    let needs_escape = input.chars().any(|c| match c {
+        '&' | '<' | '>' | '"' | '\'' | '/' => true,
+        '{' | '}' if escape_braces => true,
+        _ => false,
+    });
+
+    if !needs_escape {
+        return input.to_string();
+    }
+
     let mut result = String::with_capacity(input.len() * 2);
 
     for c in input.chars() {

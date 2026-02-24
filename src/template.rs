@@ -407,13 +407,19 @@ impl<'a> Template<'a> {
     }
 
     fn replacements(&mut self) {
-        lazy_static::lazy_static! {
-            static ref RE: Regex = Regex::new(&format!(r"\s*{}", BACKSPACE)).expect("Failed to create regex with constant pattern");
+        if self.out.contains(BACKSPACE) {
+            lazy_static::lazy_static! {
+                static ref RE: Regex = Regex::new(&format!(r"\s*{}", BACKSPACE)).expect("Failed to create regex with constant pattern");
+            }
+            if let std::borrow::Cow::Owned(s) = RE.replace_all(&self.out, "") {
+                self.out = s;
+            }
         }
-        self.out = RE.replace_all(&self.out, "").to_string();
 
         // UNPRINTABLE should be substituted after BACKSPACE
-        self.out = self.out.replace(UNPRINTABLE, "");
+        if self.out.contains(UNPRINTABLE) {
+            self.out = self.out.replace(UNPRINTABLE, "");
+        }
     }
 
     /// Retrieves the status code.
