@@ -246,25 +246,17 @@ pub fn strip_prefix_suffix<'a>(str: &'a str, prefix: &'a str, suffix: &'a str) -
 ///
 /// * A `String` containing the retrieved value, or an empty string if the key is not found.
 pub fn get_from_key(schema: &Value, key: &str) -> String {
-    let tmp: String = format!("{}{}", "/", key);
-    let k = tmp.replace(BIF_ARRAY, "/");
-    let mut result = "";
-    let num: String;
-
-    if let Some(v) = schema.pointer(&k) {
+    if let Some(v) = resolve_pointer(schema, key) {
         match v {
-            Value::Null => result = "",
-            Value::Bool(_b) => result = "",
-            Value::Number(n) => {
-                num = n.to_string();
-                result = num.as_str();
-            }
-            Value::String(s) => result = s,
-            _ => result = "",
+            Value::Null => String::new(),
+            Value::Bool(b) => b.to_string(),
+            Value::Number(n) => n.to_string(),
+            Value::String(s) => s.clone(),
+            _ => String::new(),
         }
+    } else {
+        String::new()
     }
-
-    result.to_string()
 }
 
 /// Checks if the value associated with a key in the schema is considered empty.
@@ -278,10 +270,7 @@ pub fn get_from_key(schema: &Value, key: &str) -> String {
 ///
 /// * `true` if the value is considered empty, otherwise `false`.
 pub fn is_empty_key(schema: &Value, key: &str) -> bool {
-    let tmp: String = format!("{}{}", "/", key);
-    let k = tmp.replace(BIF_ARRAY, "/");
-
-    if let Some(value) = schema.pointer(&k) {
+    if let Some(value) = resolve_pointer(schema, key) {
         match value {
             Value::Object(map) => map.is_empty(),
             Value::Array(arr) => arr.is_empty(),
@@ -306,10 +295,7 @@ pub fn is_empty_key(schema: &Value, key: &str) -> bool {
 ///
 /// * `true` if the value is considered a boolean true, otherwise `false`.
 pub fn is_bool_key(schema: &Value, key: &str) -> bool {
-    let tmp: String = format!("{}{}", "/", key);
-    let k = tmp.replace(BIF_ARRAY, "/");
-
-    if let Some(value) = schema.pointer(&k) {
+    if let Some(value) = resolve_pointer(schema, key) {
         match value {
             Value::Object(obj) => !obj.is_empty(),
             Value::Array(arr) => !arr.is_empty(),
@@ -335,10 +321,7 @@ pub fn is_bool_key(schema: &Value, key: &str) -> bool {
 ///
 /// * `true` if the value is an array, otherwise `false`.
 pub fn is_array_key(schema: &Value, key: &str) -> bool {
-    let tmp: String = format!("{}{}", "/", key);
-    let k = tmp.replace(BIF_ARRAY, "/");
-
-    if let Some(value) = schema.pointer(&k) {
+    if let Some(value) = resolve_pointer(schema, key) {
         match value {
             Value::Object(_) => true,
             Value::Array(_) => true,
@@ -360,13 +343,49 @@ pub fn is_array_key(schema: &Value, key: &str) -> bool {
 ///
 /// * `true` if the value is defined and not null, otherwise `false`.
 pub fn is_defined_key(schema: &Value, key: &str) -> bool {
-    let tmp: String = format!("{}{}", "/", key);
-    let k = tmp.replace(BIF_ARRAY, "/");
-
-    match schema.pointer(&k) {
+    match resolve_pointer(schema, key) {
         Some(value) => !value.is_null(),
         None => false,
     }
+}
+
+/// Helper function to resolve a pointer-like key (e.g., "a->b->0") in a JSON Value.
+fn resolve_pointer<'a>(schema: &'a Value, key: &str) -> Option<&'a Value> {
+    if !key.contains(BIF_ARRAY) && !key.contains('/') {
+        return schema.get(key);
+    }
+
+    let mut current = schema;
+    for part in key.split(BIF_ARRAY) {
+        if part.contains('/') {
+            for subpart in part.split('/') {
+                if subpart.is_empty() {
+                    continue;
+                }
+                current = match current {
+                    Value::Object(map) => map.get(subpart)?,
+                    Value::Array(arr) => {
+                        let idx = subpart.parse::<usize>().ok()?;
+                        arr.get(idx)?
+                    }
+                    _ => return None,
+                };
+            }
+        } else {
+            if part.is_empty() {
+                continue;
+            }
+            current = match current {
+                Value::Object(map) => map.get(part)?,
+                Value::Array(arr) => {
+                    let idx = part.parse::<usize>().ok()?;
+                    arr.get(idx)?
+                }
+                _ => return None,
+            };
+        }
+    }
+    Some(current)
 }
 
 /// Finds the position of the first occurrence of BIF_CODE_B in the source string,
