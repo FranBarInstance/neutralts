@@ -25,6 +25,7 @@ It allows you to create templates compatible with any system and any programming
 * JS fetch
 * Parse files
 * Embed files
+* MessagePack support
 * Localization
 * Debug
 * Loops: for and each
@@ -482,8 +483,19 @@ let status_param = template.get_status_param();
 
 // act accordingly at this point according to your framework
 ```
-[Rust examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/rust)
+[rust examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/rust)
 
+Alternatively, you can use MessagePack for better performance:
+
+```text
+// 1. Load template with empty data
+let mut template = Template::from_file_msgpack("file.ntpl", &[]).unwrap();
+
+// 2. Merge data from path
+template.merge_schema_msgpack_path("data.msgpack").unwrap();
+
+let content = template.render();
+```
 
 Python - Package
 ----------------

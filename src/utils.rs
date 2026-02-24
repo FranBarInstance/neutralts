@@ -82,7 +82,7 @@ pub fn update_schema(a: &mut Value, b: &Value) {
     }
 
     // Update version
-    a["version"] = VERSION.to_string().to_string().into();
+    a["version"] = VERSION.into();
 }
 
 /// Extract same level blocks positions.

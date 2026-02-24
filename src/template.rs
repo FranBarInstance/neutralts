@@ -180,6 +180,101 @@ impl<'a> Template<'a> {
         update_schema(&mut self.schema, &schema);
     }
 
+    /// Constructs a new `Template` instance from a file path and MessagePack schema bytes.
+    ///
+    /// # Arguments
+    ///
+    /// * `file_path` - A reference to the path of the file containing the template content.
+    /// * `bytes` - A byte slice containing the MessagePack schema.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the new `Template` instance or an error message if:
+    /// - The template file cannot be read.
+    /// - The MessagePack data is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use neutralts::Template;
+    /// let bytes = vec![129, 164, 100, 97, 116, 97, 129, 163, 107, 101, 121, 165, 118, 97, 108, 117, 101];
+    /// let template = Template::from_file_msgpack("template.ntpl", &bytes).unwrap();
+    /// ```
+    pub fn from_file_msgpack(file_path: &'a str, bytes: &[u8]) -> Result<Self, String> {
+        let schema: Value = if bytes.is_empty() {
+            json!({})
+        } else {
+            match rmp_serde::from_slice(bytes) {
+                Ok(v) => v,
+                Err(e) => return Err(format!("Invalid MessagePack data: {}", e)),
+            }
+        };
+
+        Self::from_file_value(file_path, schema)
+    }
+
+    /// Merges the schema from a MessagePack file with the current template schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `msgpack_path` - A reference to the path of the file containing the MessagePack schema.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error message if:
+    /// - The file cannot be read.
+    /// - The file's content is not a valid MessagePack.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use neutralts::Template;
+    /// let mut template = Template::new().unwrap();
+    /// template.merge_schema_msgpack_path("extra_data.msgpack").unwrap();
+    /// ```
+    pub fn merge_schema_msgpack_path(&mut self, msgpack_path: &str) -> Result<(), String> {
+        let msgpack_data = match fs::read(msgpack_path) {
+            Ok(data) => data,
+            Err(e) => {
+                eprintln!("Cannot be read: {}", msgpack_path);
+                return Err(e.to_string());
+            }
+        };
+
+        self.merge_schema_msgpack(&msgpack_data)
+    }
+
+    /// Merges the schema from MessagePack bytes with the current template schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `bytes` - A byte slice containing the MessagePack schema.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error message if:
+    /// - The bytes are not a valid MessagePack.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use neutralts::Template;
+    /// let mut template = Template::new().unwrap();
+    /// let bytes = vec![129, 164, 100, 97, 116, 97, 129, 163, 107, 101, 121, 165, 118, 97, 108, 117, 101];
+    /// template.merge_schema_msgpack(&bytes).unwrap();
+    /// ```
+    pub fn merge_schema_msgpack(&mut self, bytes: &[u8]) -> Result<(), String> {
+        let schema_value: Value = match rmp_serde::from_slice(bytes) {
+            Ok(value) => value,
+            Err(e) => {
+                return Err(format!("Is not a valid MessagePack data: {}", e));
+            }
+        };
+        update_schema(&mut self.schema, &schema_value);
+
+        Ok(())
+    }
+
     /// Renders the template content.
     ///
     /// This function initializes the rendering process.
@@ -312,9 +407,10 @@ impl<'a> Template<'a> {
     }
 
     fn replacements(&mut self) {
-        let pattern = format!(r"\s*{}", BACKSPACE);
-        let re = Regex::new(&pattern).expect("Failed to create regex with constant pattern");
-        self.out = re.replace_all(&self.out, "").to_string();
+        lazy_static::lazy_static! {
+            static ref RE: Regex = Regex::new(&format!(r"\s*{}", BACKSPACE)).expect("Failed to create regex with constant pattern");
+        }
+        self.out = RE.replace_all(&self.out, "").to_string();
 
         // UNPRINTABLE should be substituted after BACKSPACE
         self.out = self.out.replace(UNPRINTABLE, "");
