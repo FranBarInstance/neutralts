@@ -40,13 +40,12 @@ impl<'a> Bif<'a> {
             var_name = self.src.clone();
         }
 
-        self.out = self.get_data(&var_name).to_string();
+        self.out = self.get_data(&var_name);
 
         if (self.mod_filter || self.shared.filter_all) && !self.mod_negate {
             if !var_name.starts_with("CONTEXT->") {
                 // unescape_chars for prevent double encoding
-                self.out = unescape_chars(&self.get_data(&var_name), true).to_string();
-                self.out = escape_chars(&self.out, true).to_string();
+                self.out = escape_chars(&unescape_chars(&self.out, true), true);
             }
         } else {
             if self.shared.filter_bifs {
@@ -57,7 +56,7 @@ impl<'a> Bif<'a> {
         }
 
         if self.mod_negate && !self.shared.filter_bifs && var_name.starts_with("CONTEXT->") {
-            self.out = unescape_chars(&self.out, true).to_string();
+            self.out = unescape_chars(&self.out, true);
         }
 
         Ok(())
