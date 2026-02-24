@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-for.md")]
 
-use crate::{bif::constants::*, bif::Bif, bif::BifError};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, utils::extract_blocks};
 
 impl<'a> Bif<'a> {
     /*
@@ -53,20 +53,50 @@ impl<'a> Bif<'a> {
             }
         };
 
-        let range = if from > to {
-            (to..=from).rev().collect::<Vec<i32>>()
-        } else {
-            (from..=to).collect::<Vec<i32>>()
+        let blocks = match extract_blocks(&self.code) {
+            Ok(b) => b,
+            Err(p) => return Err(self.bif_error(&format!("Unmatched block at position {}", p))),
         };
 
         let restore_var = self.get_data(&var_name);
-        for i in range {
-            self.set_data(&var_name, &i.to_string());
-            self.out += &new_child_parse!(self, &self.code, self.mod_scope);
-        }
+        if from > to {
+            for i in (to..=from).rev() {
+                self.parse_bif_for_iter(&var_name, &i.to_string(), &blocks);
+            }
+        } else {
+            for i in from..=to {
+                self.parse_bif_for_iter(&var_name, &i.to_string(), &blocks);
+            }
+        };
         self.set_data(&var_name, &restore_var);
 
         Ok(())
+    }
+
+    fn parse_bif_for_iter(&mut self, var_name: &str, val: &str, blocks: &Vec<(usize, usize)>) {
+        self.set_data(var_name, val);
+
+        let mut child_inherit = self.inherit.clone();
+        child_inherit.alias = self.alias.clone();
+        if !self.file_path.is_empty() {
+            child_inherit.current_file = self.file_path.clone();
+        }
+        if !self.dir.is_empty() {
+            child_inherit.current_dir = self.dir.clone();
+        }
+
+        if self.mod_scope {
+            self.inherit.create_block_schema(self.shared);
+        }
+
+        let mut block_parser = crate::block_parser::BlockParser::new(self.shared, &child_inherit);
+        let code = block_parser.parse_with_blocks(&self.code, blocks, self.only);
+
+        if self.mod_scope {
+            block_parser.update_indir(&self.inherit.indir);
+        }
+
+        self.out += &code;
     }
 }
 

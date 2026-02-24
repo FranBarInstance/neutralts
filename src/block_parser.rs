@@ -3,7 +3,8 @@ use crate::{
     constants::*,
     utils::*,
     shared::Shared,
-    bif::Bif
+    bif::Bif,
+    utils::extract_blocks
 };
 
 pub(crate) struct BlockInherit {
@@ -130,30 +131,40 @@ impl<'a> BlockParser<'a> {
     }
 
     pub(crate) fn parse(&mut self, raw_source: &'a str, only: &str) -> String {
-        let blocks;
-
-        match extract_blocks(raw_source) {
-            Ok(b) => {
-                blocks = b;
-            }
+        let blocks = match extract_blocks(raw_source) {
+            Ok(b) => b,
             Err(p) => {
-                self.shared.status_code = "500".to_string();
-                self.shared.status_param = format!("Unmatched block at position {}", p);
-                eprintln!("Unmatched block at position {}", p);
-
-                if let Some(text) = STATUS_CODES.get(self.shared.status_code.as_str()) {
-                    self.shared.status_text = text.to_string();
-                } else {
-                    self.shared.status_text = EMPTY_STRING;
-                }
-
+                self.handle_unmatched_block(p);
                 return EMPTY_STRING;
             }
-        }
+        };
 
+        self.parse_with_blocks(raw_source, &blocks, only)
+    }
+
+    fn handle_unmatched_block(&mut self, p: usize) {
+        self.shared.status_code = "500".to_string();
+        self.shared.status_param = format!("Unmatched block at position {}", p);
+        eprintln!("Unmatched block at position {}", p);
+
+        if let Some(text) = STATUS_CODES.get(self.shared.status_code.as_str()) {
+            self.shared.status_text = text.to_string();
+        } else {
+            self.shared.status_text = EMPTY_STRING;
+        }
+    }
+
+    pub(crate) fn parse_with_blocks(
+        &mut self,
+        raw_source: &'a str,
+        blocks: &[(usize, usize)],
+        only: &str,
+    ) -> String {
         let mut prev_end = 0;
         let mut out = String::new();
         for (start, end) in blocks {
+            let start = *start;
+            let end = *end;
             let is_comment = raw_source[start..end].starts_with(BIF_COMMENT_OPEN);
             let is_short_circuit_coalesce =
                 self.inherit.last_coalesce_out && self.inherit.alias == "coalesce";

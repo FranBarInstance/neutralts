@@ -1,6 +1,6 @@
 #![doc = include_str!("../../doc/bif-each.md")]
 
-use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*, json, Value};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, json, utils::resolve_pointer, utils::extract_blocks, Value};
 
 impl<'a> Bif<'a> {
     /*
@@ -42,33 +42,40 @@ impl<'a> Bif<'a> {
             }
         };
 
-        let tmp: String = format!("{}{}", "/", array_name);
-        let mut array = tmp.replace(BIF_ARRAY, "/");
         let restore_key = self.get_data(&key_name);
         let restore_val = self.get_data(&val_name);
 
-        let data_storage;
-        if array.starts_with("/local::") {
-            array = array.replace("/local::", "/");
-            data_storage = &self.shared.schema["__indir"][&self.inherit.indir]["data"];
+        let data_storage = if array_name.starts_with("local::") {
+            &self.shared.schema["__indir"][&self.inherit.indir]["data"]
         } else {
-            data_storage = &self.shared.schema["data"];
-        }
+            &self.shared.schema["data"]
+        };
 
-        if let Some(data_value) = data_storage.pointer(&array) {
-            match data_value.to_owned() {
-                Value::Object(obj) => {
-                    for (key, val) in obj.iter() {
-                        self.parse_bif_each_iter(&key_name, &val_name, key, val);
-                    }
+        let array_clean = array_name.strip_prefix("local::").unwrap_or(&array_name);
+
+        let collection = if let Some(data_value) = resolve_pointer(data_storage, array_clean) {
+            data_value.clone()
+        } else {
+            Value::Null
+        };
+
+        let blocks = match extract_blocks(&self.code) {
+            Ok(b) => b,
+            Err(p) => return Err(self.bif_error(&format!("Unmatched block at position {}", p))),
+        };
+
+        match collection {
+            Value::Object(obj) => {
+                for (key, val) in obj.iter() {
+                    self.parse_bif_each_iter(&key_name, &val_name, key, val, &blocks);
                 }
-                Value::Array(arr) => {
-                    for (key, val) in arr.iter().enumerate() {
-                        self.parse_bif_each_iter(&key_name, &val_name, &key.to_string(), val);
-                    }
-                }
-                _ => {}
             }
+            Value::Array(arr) => {
+                for (idx, val) in arr.iter().enumerate() {
+                    self.parse_bif_each_iter(&key_name, &val_name, &idx.to_string(), val, &blocks);
+                }
+            }
+            _ => {}
         }
 
         self.set_data(&key_name, &restore_key);
@@ -77,10 +84,39 @@ impl<'a> Bif<'a> {
         Ok(())
     }
 
-    fn parse_bif_each_iter(&mut self, key_name: &str, val_name: &str, key: &String, val: &Value) {
+    fn parse_bif_each_iter(
+        &mut self,
+        key_name: &str,
+        val_name: &str,
+        key: &String,
+        val: &Value,
+        blocks: &Vec<(usize, usize)>,
+    ) {
         self.shared.schema["data"][key_name] = json!(key);
         self.shared.schema["data"][val_name] = json!(val);
-        self.out += &new_child_parse!(self, &self.code, self.mod_scope);
+
+        let mut child_inherit = self.inherit.clone();
+        child_inherit.alias = self.alias.clone();
+        if !self.file_path.is_empty() {
+            child_inherit.current_file = self.file_path.clone();
+        }
+        if !self.dir.is_empty() {
+            child_inherit.current_dir = self.dir.clone();
+        }
+
+        if self.mod_scope {
+            self.inherit.create_block_schema(self.shared);
+        }
+
+        let mut block_parser =
+            crate::block_parser::BlockParser::new(self.shared, &child_inherit);
+        let code = block_parser.parse_with_blocks(&self.code, blocks, self.only);
+
+        if self.mod_scope {
+            block_parser.update_indir(&self.inherit.indir);
+        }
+
+        self.out += &code;
     }
 }
 
