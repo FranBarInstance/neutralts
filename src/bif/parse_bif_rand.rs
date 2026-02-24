@@ -1,7 +1,7 @@
 #![doc = include_str!("../../doc/bif-rand.md")]
 
 use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*};
-use rand::Rng;
+use rand::RngExt;
 
 impl<'a> Bif<'a> {
     /*

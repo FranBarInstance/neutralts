@@ -2,7 +2,7 @@
 
 use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*};
 use md5::{Digest, Md5};
-use rand::Rng;
+use rand::RngExt;
 
 impl<'a> Bif<'a> {
     /*
