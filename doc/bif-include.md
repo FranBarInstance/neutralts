@@ -19,7 +19,7 @@ Modifiers:
 
 ### Modifier: ! (not)
 
-The "not" modifier prevents the file from being reparse if it has already been parsed.
+The "not" modifier prevents the file from being reparsed if it has already been parsed.
 
 Assuming that the content of file.ntpl is simply the word "Hello":
 
@@ -58,7 +58,7 @@ The following produces the same result as above:
 {:!include; file.ntpl :}
 ```
 
-Or can the parse be forced:
+Or the parse can be forced:
 
 ```html
 {:!include; file.ntpl :}

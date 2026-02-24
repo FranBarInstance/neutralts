@@ -1,7 +1,7 @@
 {:allow; ... :}
 ===================================
 
-Output literal if the literal found from a list defined with "declare", empty string if it fails.
+Outputs a literal if the literal is found in a list defined with "declare"; otherwise, returns an empty string.
 
 ```html
 {:allow; declare-name >> literal :}

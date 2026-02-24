@@ -13,7 +13,12 @@ Any delimiter can be used:
 {:sum; #a#b# :}
 {:sum; |a|b| :}
 {:sum; XaXbX :}
-...
+```
+
+Example with variables:
+
+```html
+{:sum; /{:;var1:}/{:;var2:}/ :}
 ```
 
 Modifiers:

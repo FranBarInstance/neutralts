@@ -6,7 +6,7 @@ Output UTC date
 ```html
 {:date;  :}
 ```
-Default fotmat is timestamp
+Default format is timestamp
 
 ```html
 {:date; :}

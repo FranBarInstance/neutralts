@@ -12,7 +12,6 @@ To access the variables, the prefix "local::" must be used:
 
 ```html
 {:;local::varname:}
-```
 Modifiers
 ---------
 
@@ -20,7 +19,14 @@ Modifiers
 {:!data; ... :}
 {:^data; ... :}
 ```
-The "not" modifier prevents the file from being reload if it has already been parsed.
+
+### Modifier: ^ (upline)
+
+Eliminates previous whitespaces.
+
+### Modifier: ! (not)
+
+The "not" modifier prevents the file from being reloaded if it has already been loaded.
 
 ```html
 {:!data; file.json :}

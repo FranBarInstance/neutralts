@@ -63,13 +63,13 @@ js:reload:self reloads the current page in the current window, no URL required:
 js:redirect:top redirects the page (URL) in the top window, requires the destination URL:
 
 ```html
-{:redirect; js:redirect;top >> /home/ :}
+{:redirect; js:redirect:top >> /home/ :}
 ```
 
 js:redirect:self redirects the page (URL) in the current window, requires the destination URL:
 
 ```html
-{:redirect; js:redirect;self >> /home/ :}
+{:redirect; js:redirect:self >> /home/ :}
 ```
 
 Manage in the app (native Rust)

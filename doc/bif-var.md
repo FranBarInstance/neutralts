@@ -56,7 +56,7 @@ Escapes special HTML characters and braces:
 } → &#125;
 ```
 
-By default all user variables are filtered, those starting with `CONTEXT->`. There is also a schema configuration to escape all variables `filter_all`:
+By default, all variables are filtered except those starting with `CONTEXT->`. There is also a schema configuration to escape all variables `filter_all`:
 
 ```text
 {
@@ -102,10 +102,10 @@ Assuming:
             "value"
         ],
         "obj": {
-            "0": "value"
+            "0": "value",
             "arr": [
                 "value"
-            ],
+            ]
         }
     }
 }
@@ -135,7 +135,7 @@ However, the following will produce an error:
 For safety reasons, when evaluating the complete variable it is necessary to use "allow":
 
 ```text
-{:; {:allow; allowed-words-list >> {:;varname:} :} :}
+{:;{:allow; allowed-words-list >> {:;varname:} :} :}
 ```
 
 In any case, you must use "allow" on any variable that comes from the context. See the "allow" and "declare" bifs for more details.

@@ -30,8 +30,16 @@ Example:
 </html>
 ```
 
-No modifiers
+Modifiers:
 ----------
+
+```html
+{:^lang; :}
+```
+
+### Modifier: ^ (upline)
+
+Eliminates previous whitespaces.
 
 
 No flags

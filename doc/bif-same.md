@@ -18,4 +18,25 @@ Any delimiter can be used:
 ...
 ```
 
+Modifiers:
+----------
+
+```html
+{:^same; ... :}
+{:!same; ... :}
+{:+same; ... :}
+```
+
+### Modifier: ^ (upline)
+
+Eliminates previous whitespaces.
+
+### Modifier: ! (not)
+
+Returns the code if the two literals are NOT the same.
+
+### Modifier: + (scope)
+
+For more details about the "+" modifier see "modifiers".
+
 ---

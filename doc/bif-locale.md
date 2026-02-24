@@ -38,11 +38,15 @@ Modifiers:
 
 ### Modifier: ! (not)
 
-The "not" modifier prevents the file from being reload if it has already been parsed. Generally, language files should only be included once, it will increase performance if "not" is used:
+The "not" modifier prevents the file from being reloaded if it has already been parsed. Generally, language files should only be included once; it will increase performance if "not" is used:
 
 ```html
 {:!locale; file.json :}
 ```
+
+### Modifier: ^ (upline)
+
+Eliminates previous whitespaces.
 
 Flags
 -----
@@ -53,7 +57,7 @@ Flags
 
 ### Flag: require
 
-By default, no error will occur if the file to locale does not exist, unless the "require" flag is set.
+By default, no error will occur if the locale file does not exist, unless the "require" flag is set.
 
 ```html
 {:locale; {:flg; require :} >> file.json :}
@@ -70,7 +74,7 @@ The "noparse" flag prevents the file to be included from being parsed.
 Return value
 ------------
 
-"locale" show no output but returns "{:;:}" (unprintable) if successful, so this is possible:
+"locale" shows no output but returns "{:;:}" (unprintable) if successful, so this is possible:
 
 ```html
 {:locale; file.{:lang;:}.json :}
