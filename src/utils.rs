@@ -110,91 +110,82 @@ pub fn update_schema(a: &mut Value, b: &Value) {
 /// ```
 pub fn extract_blocks(raw_source: &str) -> Result<Vec<(usize, usize)>, usize> {
     let mut blocks = Vec::new();
-    let bytes = raw_source.as_bytes();
     let mut curr_pos: usize = 0;
-    let mut open_pos: usize;
-    let mut nested = 0;
-    let mut nested_comment = 0;
-    let len_open = BIF_OPEN_B.len();
-    let len_close = BIF_CLOSE_B.len();
-    let len_src = bytes.len();
+    let len_src = raw_source.len();
+    let bytes = raw_source.as_bytes();
 
-    while let Some(pos) = find_bytes(bytes, BIF_OPEN_B, curr_pos) {
-        curr_pos = pos + len_open;
-        open_pos = pos;
+    while let Some(pos) = raw_source[curr_pos..].find(BIF_OPEN) {
+        let open_pos = curr_pos + pos;
+        let start_body = open_pos + BIF_OPEN.len();
+        curr_pos = start_body;
 
-        // It is important to extract the comments first because they may have bif commented,
-        // we avoid that they are detected as valid and other errors.
-        if bytes[curr_pos] == BIF_COMMENT_B {
-            while let Some(pos) = find_bytes(bytes, BIF_DELIM_B, curr_pos) {
-                curr_pos = pos;
+        if curr_pos < len_src && bytes[curr_pos] == BIF_COMMENT_B {
+            let mut nested_comment = 0;
+            let mut search_pos = curr_pos;
+            while let Some(delim_pos_rel) = raw_source[search_pos..].find(':') {
+                let delim_pos = search_pos + delim_pos_rel;
+                if delim_pos > 0 && delim_pos + 1 < len_src {
+                    let prev = bytes[delim_pos - 1];
+                    let next = bytes[delim_pos + 1];
 
-                if curr_pos >= len_src {
-                    break;
+                    if prev == BIF_OPEN0 && next == BIF_COMMENT_B {
+                        nested_comment += 1;
+                        search_pos = delim_pos + 1;
+                        continue;
+                    }
+                    if nested_comment > 0 && prev == BIF_COMMENT_B && next == BIF_CLOSE1 {
+                        nested_comment -= 1;
+                        search_pos = delim_pos + 1;
+                        continue;
+                    }
+                    if prev == BIF_COMMENT_B && next == BIF_CLOSE1 {
+                        curr_pos = delim_pos + BIF_CLOSE.len();
+                        blocks.push((open_pos, curr_pos));
+                        break;
+                    }
                 }
+                search_pos = delim_pos + 1;
+            }
+        } else {
+            let mut nested = 0;
+            let mut search_pos = curr_pos;
+            while let Some(delim_pos_rel) = raw_source[search_pos..].find(':') {
+                let delim_pos = search_pos + delim_pos_rel;
+                if delim_pos > 0 && delim_pos + 1 < len_src {
+                    let prev = bytes[delim_pos - 1];
+                    let next = bytes[delim_pos + 1];
 
-                if bytes[curr_pos - 1] == BIF_OPEN0 && bytes[curr_pos + 1] == BIF_COMMENT_B  {
-                    nested_comment += 1;
-                    curr_pos += 1;
-                    continue;
+                    if prev == BIF_OPEN0 {
+                        nested += 1;
+                        search_pos = delim_pos + 1;
+                        continue;
+                    }
+                    if nested > 0 && next == BIF_CLOSE1 {
+                        nested -= 1;
+                        search_pos = delim_pos + 1;
+                        continue;
+                    }
+                    if next == BIF_CLOSE1 {
+                        curr_pos = delim_pos + BIF_CLOSE.len();
+                        blocks.push((open_pos, curr_pos));
+                        break;
+                    }
                 }
-                if nested_comment > 0 && bytes[curr_pos + 1] == BIF_CLOSE1 && bytes[curr_pos - 1] == BIF_COMMENT_B {
-                    nested_comment -= 1;
-                    curr_pos += 1;
-                    continue;
-                }
-                if bytes[curr_pos + 1] == BIF_CLOSE1 && bytes[curr_pos - 1] == BIF_COMMENT_B {
-                    curr_pos += len_close;
-                    blocks.push((open_pos, curr_pos));
-                    break;
-                } else {
-                    curr_pos += 1;
-                }
-            }
-
-            continue;
-        }
-
-        while let Some(pos) = find_bytes(bytes, BIF_DELIM_B, curr_pos) {
-            curr_pos = pos;
-
-            if curr_pos >= len_src {
-                break;
-            }
-
-            if bytes[curr_pos - 1] == BIF_OPEN0 {
-                nested += 1;
-                curr_pos += 1;
-                continue;
-            }
-            if nested > 0 && bytes[curr_pos + 1] == BIF_CLOSE1 {
-                nested -= 1;
-                curr_pos += 1;
-                continue;
-            }
-            if bytes[curr_pos + 1] == BIF_CLOSE1 {
-                curr_pos += len_close;
-                blocks.push((open_pos, curr_pos));
-                break;
-            } else {
-                curr_pos += 1;
+                search_pos = delim_pos + 1;
             }
         }
     }
 
-    // Search BIF_CLOSE in the blocks that are not bif, given that we start looking
-    // for BIF_OPEN all these keys are found, if anything is left is BIF_CLOSE
     let mut prev_end = 0;
     for (start, end) in &blocks {
-        if let Some(error_pos) = find_bytes(&bytes[prev_end..*start], BIF_CLOSE_B, 0) {
-            return Err(error_pos + prev_end);
+        if let Some(pos) = raw_source[prev_end..*start].find(BIF_CLOSE) {
+            return Err(prev_end + pos);
         }
         prev_end = *end;
     }
 
-    let rest = if curr_pos == 0 { 0 } else { curr_pos - 1 };
-    if let Some(error_pos) = find_bytes(bytes, BIF_CLOSE_B, rest) {
-        return Err(error_pos);
+    if let Some(pos) = raw_source[prev_end..].find(BIF_CLOSE) {
+        return Err(prev_end + pos);
     }
 
     Ok(blocks)
@@ -204,11 +195,14 @@ fn find_bytes(bytes: &[u8], substring: &[u8], start_pos: usize) -> Option<usize>
     let bytes_len = bytes.len();
     let subs_len = substring.len();
 
-    if start_pos >= bytes_len || substring.is_empty() || start_pos + subs_len > bytes_len  {
+    if start_pos >= bytes_len || subs_len == 0 || start_pos + subs_len > bytes_len {
         return None;
     }
 
-    (start_pos..=bytes_len.saturating_sub(subs_len)).find(|&i| &bytes[i..i + subs_len] == substring)
+    bytes[start_pos..]
+        .windows(subs_len)
+        .position(|window| window == substring)
+        .map(|pos| pos + start_pos)
 }
 
 /// Removes a prefix and suffix from a string slice.
