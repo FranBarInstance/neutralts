@@ -77,7 +77,9 @@ impl<'a> Template<'a> {
         let mut default_schema = default_schema_template()?;
 
         update_schema_owned(&mut default_schema, schema);
-        let shared = Shared::new(default_schema.clone());
+        // Avoid cloning a potentially huge merged schema during construction.
+        // `shared` will be fully initialized in `init_render` when needed.
+        let shared = Shared::new(default_schema_template()?);
 
         Ok(Template {
             raw,
@@ -286,6 +288,15 @@ impl<'a> Template<'a> {
     ///
     /// The rendered template content as a string.
     pub fn render(&mut self) -> String {
+        // Fast path: when there are no blocks, skip full render initialization.
+        // This avoids cloning large schemas for templates with plain text/empty source.
+        self.time_start = Instant::now();
+        if !self.raw.contains(BIF_OPEN) {
+            self.out = self.raw.trim().to_string();
+            self.time_elapsed = self.time_start.elapsed();
+            return self.out.clone();
+        }
+
         let inherit = self.init_render();
         self.out = BlockParser::new(&mut self.shared, inherit.clone()).parse(&self.raw, "");
 
