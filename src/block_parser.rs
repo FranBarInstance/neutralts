@@ -69,16 +69,15 @@ impl BlockInherit {
     // that needs to be inherited to obtain the reference to the storage.
     pub(crate) fn create_block_schema(&mut self, shared: &mut Shared) -> String {
         let prev_id = self.indir.clone();
-        let block_id;
 
         // If this function is called before creating the first block.
         // It may be necessary to initialize values.
         // The first block is not 0, is 1.
-        if self.block_count < 1 {
-            block_id = "block_1".to_string();
+        let block_id = if self.block_count < 1 {
+            "block_1".to_string()
         } else {
-            block_id = "block_".to_string() + self.block_count.to_string().as_str();
-        }
+            format!("block_{}", self.block_count)
+        };
 
         // It can be called several times from the same level, in which case
         // it does not need to be cloned again.
@@ -102,7 +101,7 @@ pub(crate) struct BlockParser<'a> {
 impl Drop for BlockParser<'_> {
     fn drop(&mut self) {
         // release memory
-        let block_id = "block_".to_string() + self.inherit.block_count.to_string().as_str();
+        let block_id = format!("block_{}", self.inherit.block_count);
 
         // The first main block cannot be deleted
         if block_id != "block_1" {

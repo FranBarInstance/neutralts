@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path;
+use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 use serde_json::{json, Value};
 use regex::Regex;
@@ -22,6 +23,16 @@ pub struct Template<'a> {
     out: String,
 }
 
+fn default_schema_template() -> Result<Value, String> {
+    static DEFAULT_SCHEMA: OnceLock<Result<Value, String>> = OnceLock::new();
+    DEFAULT_SCHEMA
+        .get_or_init(|| {
+            serde_json::from_str(DEFAULT)
+                .map_err(|_| "const DEFAULT is not a valid JSON string".to_string())
+        })
+        .clone()
+}
+
 /// A struct representing a template that can be rendered.
 ///
 /// This struct is used to handle the rendering of templates.
@@ -30,10 +41,7 @@ impl<'a> Template<'a> {
     ///
     /// It allows you to set up a template and schema with different types.
     pub fn new() -> Result<Self, String> {
-        let default_schema: Value = match serde_json::from_str(DEFAULT) {
-            Ok(value) => value,
-            Err(_) => return Err("const DEFAULT is not a valid JSON string".to_string()),
-        };
+        let default_schema = default_schema_template()?;
         let shared = Shared::new(default_schema.clone());
 
         Ok(Template {
@@ -66,13 +74,7 @@ impl<'a> Template<'a> {
                 return Err(e.to_string());
             }
         };
-        let mut default_schema: Value = match serde_json::from_str(DEFAULT) {
-            Ok(value) => value,
-            Err(_) => {
-                eprintln!("Internal error in const DEFAULT {}, line: {}", file!(), line!());
-                return Err("const DEFAULT is not a valid JSON string".to_string());
-            }
-        };
+        let mut default_schema = default_schema_template()?;
 
         update_schema_owned(&mut default_schema, schema);
         let shared = Shared::new(default_schema.clone());
@@ -131,20 +133,20 @@ impl<'a> Template<'a> {
     /// - The file cannot be read.
     /// - The file's content is not a valid JSON string.
     pub fn merge_schema_path(&mut self, schema_path: &str) -> Result<(), String> {
-        let schema_str: String = match fs::read_to_string(schema_path) {
-            Ok(s) => s,
+        let schema_bytes = match fs::read(schema_path) {
+            Ok(bytes) => bytes,
             Err(e) => {
                 eprintln!("Cannot be read: {}", schema_path);
                 return Err(e.to_string());
             }
         };
-        let schema_value: Value = match serde_json::from_str(&schema_str) {
+        let schema_value: Value = match serde_json::from_slice(&schema_bytes) {
             Ok(value) => value,
             Err(_) => {
                 return Err("Is not a valid JSON file".to_string());
             }
         };
-        update_schema(&mut self.schema, &schema_value);
+        update_schema_owned(&mut self.schema, schema_value);
 
         Ok(())
     }
@@ -166,7 +168,7 @@ impl<'a> Template<'a> {
                 return Err("Is not a valid JSON string".to_string());
             }
         };
-        update_schema(&mut self.schema, &schema_value);
+        update_schema_owned(&mut self.schema, schema_value);
 
         Ok(())
     }

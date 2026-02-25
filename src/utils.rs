@@ -1,6 +1,6 @@
-
 use serde_json::Value;
 use crate::constants::*;
+use std::borrow::Cow;
 
 /// Merges two JSON schemas represented as `serde_json::Value`.
 ///
@@ -56,10 +56,13 @@ pub fn merge_schema_owned(a: &mut Value, b: Value) {
     match (a, b) {
         (Value::Object(a_map), Value::Object(b_map)) => {
             for (k, v) in b_map {
-                if let Some(va) = a_map.get_mut(&k) {
-                    merge_schema_owned(va, v);
-                } else {
-                    a_map.insert(k, v);
+                match a_map.entry(k) {
+                    serde_json::map::Entry::Occupied(mut entry) => {
+                        merge_schema_owned(entry.get_mut(), v);
+                    }
+                    serde_json::map::Entry::Vacant(entry) => {
+                        entry.insert(v);
+                    }
                 }
             }
         }
@@ -86,20 +89,30 @@ pub fn update_schema(a: &mut Value, b: &Value) {
     merge_schema(a, b);
 
     // Different environments may ignore or add capitalization in headers
-    let headers = &b["data"]["CONTEXT"]["HEADERS"];
-    if headers.get("requested-with-ajax").is_some() {
-        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = b["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = b["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
-    } else if headers.get("Requested-With-Ajax").is_some() {
-        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = b["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = b["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
-    } else if headers.get("REQUESTED-WITH-AJAX").is_some() {
-        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = b["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = b["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"].clone();
+    if let Some(headers) = a
+        .get_mut("data")
+        .and_then(|d| d.get_mut("CONTEXT"))
+        .and_then(|c| c.get_mut("HEADERS"))
+        .and_then(|h| h.as_object_mut())
+    {
+        if let Some(val) = headers.get("requested-with-ajax").cloned() {
+            headers.insert("Requested-With-Ajax".to_string(), val.clone());
+            headers.insert("REQUESTED-WITH-AJAX".to_string(), val);
+        } else if let Some(val) = headers.get("Requested-With-Ajax").cloned() {
+            headers.insert("requested-with-ajax".to_string(), val.clone());
+            headers.insert("REQUESTED-WITH-AJAX".to_string(), val);
+        } else if let Some(val) = headers.get("REQUESTED-WITH-AJAX").cloned() {
+            headers.insert("requested-with-ajax".to_string(), val.clone());
+            headers.insert("Requested-With-Ajax".to_string(), val);
+        }
     }
 
     // Update version
-    a["version"] = VERSION.into();
+    if let Some(obj) = a.as_object_mut() {
+        obj.insert("version".to_string(), VERSION.into());
+    } else {
+        a["version"] = VERSION.into();
+    }
 }
 
 /// Same as update_schema but takes ownership of `b` to avoid clones.
@@ -107,24 +120,30 @@ pub fn update_schema_owned(a: &mut Value, b: Value) {
     merge_schema_owned(a, b);
 
     // Different environments may ignore or add capitalization in headers
-    // Note: after merge_schema_owned, b is consumed, so we read from a
-    let headers = &a["data"]["CONTEXT"]["HEADERS"];
-    if headers.get("requested-with-ajax").is_some() {
-        let val = a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = val.clone();
-        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = val;
-    } else if headers.get("Requested-With-Ajax").is_some() {
-        let val = a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = val.clone();
-        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = val;
-    } else if headers.get("REQUESTED-WITH-AJAX").is_some() {
-        let val = a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"].clone();
-        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = val.clone();
-        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = val;
+    if let Some(headers) = a
+        .get_mut("data")
+        .and_then(|d| d.get_mut("CONTEXT"))
+        .and_then(|c| c.get_mut("HEADERS"))
+        .and_then(|h| h.as_object_mut())
+    {
+        if let Some(val) = headers.get("requested-with-ajax").cloned() {
+            headers.insert("Requested-With-Ajax".to_string(), val.clone());
+            headers.insert("REQUESTED-WITH-AJAX".to_string(), val);
+        } else if let Some(val) = headers.get("Requested-With-Ajax").cloned() {
+            headers.insert("requested-with-ajax".to_string(), val.clone());
+            headers.insert("REQUESTED-WITH-AJAX".to_string(), val);
+        } else if let Some(val) = headers.get("REQUESTED-WITH-AJAX").cloned() {
+            headers.insert("requested-with-ajax".to_string(), val.clone());
+            headers.insert("Requested-With-Ajax".to_string(), val);
+        }
     }
 
     // Update version
-    a["version"] = VERSION.into();
+    if let Some(obj) = a.as_object_mut() {
+        obj.insert("version".to_string(), VERSION.into());
+    } else {
+        a["version"] = VERSION.into();
+    }
 }
 
 /// Extract same level blocks positions.
@@ -380,35 +399,54 @@ pub(crate) fn resolve_pointer<'a>(schema: &'a Value, key: &str) -> Option<&'a Va
     }
 
     let mut current = schema;
-    for part in key.split(BIF_ARRAY) {
-        if part.contains('/') {
-            for subpart in part.split('/') {
-                if subpart.is_empty() {
-                    continue;
-                }
+    let mut start = 0;
+    let bytes = key.as_bytes();
+    let len = bytes.len();
+
+    let bif_array_bytes = BIF_ARRAY.as_bytes();
+    let delim_len = bif_array_bytes.len();
+
+    let mut i = 0;
+    while i < len {
+        let is_slash = bytes[i] == b'/';
+        let is_arrow = !is_slash && i + delim_len <= len && &bytes[i..i + delim_len] == bif_array_bytes;
+
+        if is_slash || is_arrow {
+            let part = &key[start..i];
+            if !part.is_empty() {
                 current = match current {
-                    Value::Object(map) => map.get(subpart)?,
+                    Value::Object(map) => map.get(part)?,
                     Value::Array(arr) => {
-                        let idx = subpart.parse::<usize>().ok()?;
+                        let idx = part.parse::<usize>().ok()?;
                         arr.get(idx)?
                     }
                     _ => return None,
                 };
             }
-        } else {
-            if part.is_empty() {
-                continue;
+            if is_slash {
+                i += 1;
+                start = i;
+            } else {
+                i += delim_len;
+                start = i;
             }
-            current = match current {
-                Value::Object(map) => map.get(part)?,
-                Value::Array(arr) => {
-                    let idx = part.parse::<usize>().ok()?;
-                    arr.get(idx)?
-                }
-                _ => return None,
-            };
+        } else {
+            i += 1;
         }
     }
+
+    if start < len {
+        let part = &key[start..];
+        current = match current {
+            Value::Object(map) => map.get(part)?,
+            Value::Array(arr) => {
+                let idx = part.parse::<usize>().ok()?;
+                arr.get(idx)?
+            }
+            _ => return None,
+        };
+    }
+
     Some(current)
 }
 
@@ -637,7 +675,7 @@ pub fn find_tag_position(text: &str, tag: &str) -> Option<usize> {
 /// let escaped = escape_chars(input, true);
 /// assert_eq!(escaped, r#"Hello, &lt;world&gt; &amp; &quot;friends&quot;! &#123;example&#125;"#);
 /// ```
-pub fn escape_chars(input: &str, escape_braces: bool) -> String {
+pub fn escape_chars<'a>(input: &'a str, escape_braces: bool) -> Cow<'a, str> {
     let needs_escape = input.chars().any(|c| match c {
         '&' | '<' | '>' | '"' | '\'' | '/' => true,
         '{' | '}' if escape_braces => true,
@@ -645,7 +683,7 @@ pub fn escape_chars(input: &str, escape_braces: bool) -> String {
     });
 
     if !needs_escape {
-        return input.to_string();
+        return Cow::Borrowed(input);
     }
 
     let mut result = String::with_capacity(input.len() * 2);
@@ -667,7 +705,7 @@ pub fn escape_chars(input: &str, escape_braces: bool) -> String {
             result.push(c);
         }
     }
-    result
+    Cow::Owned(result)
 }
 
 /// Unescapes HTML entities in a given input string.
@@ -717,9 +755,9 @@ pub fn escape_chars(input: &str, escape_braces: bool) -> String {
 /// let unescaped = unescape_chars(input, false);
 /// assert_eq!(unescaped, "This is an &unknown; entity.");
 /// ```
-pub fn unescape_chars(input: &str, escape_braces: bool) -> String {
+pub fn unescape_chars<'a>(input: &'a str, escape_braces: bool) -> Cow<'a, str> {
     if !input.contains('&') {
-        return input.to_string();
+        return Cow::Borrowed(input);
     }
     let mut result = String::with_capacity(input.len());
     let mut chars = input.chars().peekable();
@@ -756,7 +794,7 @@ pub fn unescape_chars(input: &str, escape_braces: bool) -> String {
             result.push(c);
         }
     }
-    result
+    Cow::Owned(result)
 }
 
 /// Recursively filter a Value with the function escape_chars
@@ -767,9 +805,19 @@ pub fn unescape_chars(input: &str, escape_braces: bool) -> String {
 ///
 pub fn filter_value(value: &mut Value) {
     match value {
-        Value::String(s) => *s = escape_chars(&unescape_chars(&s, true), true),
+        Value::String(s) => {
+            // First unescape, then escape - only allocate if changes are needed
+            let unescaped = unescape_chars(s, true);
+            let processed = match unescaped {
+                Cow::Borrowed(_) => escape_chars(s, true),
+                Cow::Owned(ref u) => escape_chars(u, true),
+            };
+            if let Cow::Owned(new_s) = processed {
+                *s = new_s;
+            }
+        },
         Value::Object(obj) => for v in obj.values_mut() {
-            filter_value(v) ;
+            filter_value(v);
         },
         Value::Array(arr) => for item in arr.iter_mut() {
             filter_value(item);
@@ -787,14 +835,34 @@ pub fn filter_value(value: &mut Value) {
 pub fn filter_value_keys(value: &mut Value) {
     match value {
         Value::Object(obj) => {
-            let mut new_obj = serde_json::Map::new();
+            // Check if any key needs escaping
+            let needs_change = obj.keys().any(|k| {
+                k.contains('&') || k.chars().any(|c| matches!(c, '&' | '<' | '>' | '"' | '\'' | '/' | '{' | '}'))
+            });
 
+            if !needs_change {
+                // No key changes needed, just recurse into values
+                for val in obj.values_mut() {
+                    filter_value_keys(val);
+                }
+                return;
+            }
+
+            // Keys need changes, create new Map with escaped keys
+            let mut new_obj = serde_json::Map::with_capacity(obj.len());
             for (key, val) in obj.iter_mut() {
-                let new_key = escape_chars(&unescape_chars(key, true), true);
+                let unescaped = unescape_chars(key, true);
+                let processed = match unescaped {
+                    Cow::Borrowed(_) => escape_chars(key, true),
+                    Cow::Owned(ref u) => escape_chars(u, true),
+                };
+                let new_key = match processed {
+                    Cow::Borrowed(b) => b.to_string(),
+                    Cow::Owned(o) => o,
+                };
                 filter_value_keys(val);
                 new_obj.insert(new_key, std::mem::take(val));
             }
-
             *obj = new_obj;
         }
         Value::Array(arr) => {

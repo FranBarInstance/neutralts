@@ -70,7 +70,7 @@ impl<'a> Bif<'a> {
         if self.mod_filter {
             // unescape_chars for prevent double encoding
             let tmp = unescape_chars(&self.out, true);
-            self.out = escape_chars(&tmp, true);
+            self.out = escape_chars(&tmp, true).into_owned();
         }
 
         Ok(())

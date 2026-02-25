@@ -22,7 +22,7 @@ impl<'a> Bif<'a> {
         }
 
         if self.flags.contains("|inline|") {
-            let data: Value = match serde_json::from_str(&self.code) {
+            let mut data: Value = match serde_json::from_str(&self.code) {
                 Ok(value) => value,
                 Err(_) => {
                     return Err(self.bif_error(BIF_ERROR_NOT_VALID_JSON));
@@ -32,10 +32,11 @@ impl<'a> Bif<'a> {
             let indir = &self.inherit.create_block_schema(self.shared);
 
             // Merge new locale data in curren local data.
-            merge_schema(
-                &mut self.shared.schema["__indir"][indir]["data"],
-                &data["data"],
-            );
+            let merge_data = data
+                .as_object_mut()
+                .and_then(|obj| obj.remove("data"))
+                .unwrap_or(Value::Null);
+            merge_schema_owned(&mut self.shared.schema["__indir"][indir]["data"], merge_data);
 
             self.out = UNPRINTABLE.to_string();
 
@@ -81,7 +82,7 @@ impl<'a> Bif<'a> {
         self.inherit.data_files.push(canonical_path);
         let file_raw = fs::read_to_string(&self.file_path).unwrap_or("".to_string());
 
-        let data: Value = match serde_json::from_str(&file_raw) {
+        let mut data: Value = match serde_json::from_str(&file_raw) {
             Ok(value) => value,
             Err(_) => {
                 return Err(self.bif_error(BIF_ERROR_NOT_VALID_JSON));
@@ -91,10 +92,11 @@ impl<'a> Bif<'a> {
         let indir = &self.inherit.create_block_schema(self.shared);
 
         // Merge new locale data in curren local data.
-        merge_schema(
-            &mut self.shared.schema["__indir"][indir]["data"],
-            &data["data"],
-        );
+        let merge_data = data
+            .as_object_mut()
+            .and_then(|obj| obj.remove("data"))
+            .unwrap_or(Value::Null);
+        merge_schema_owned(&mut self.shared.schema["__indir"][indir]["data"], merge_data);
 
         self.out = UNPRINTABLE.to_string();
 

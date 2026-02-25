@@ -40,7 +40,7 @@ impl<'a> Bif<'a> {
             let indir = &self.inherit.create_block_schema(self.shared);
 
             // Merge new locale data in curren locale.
-            merge_schema(&mut self.shared.schema["__indir"][indir]["locale"], &locale);
+            merge_schema_owned(&mut self.shared.schema["__indir"][indir]["locale"], locale);
 
             self.out = EMPTY_STRING;
 
@@ -100,7 +100,7 @@ impl<'a> Bif<'a> {
         let indir = &self.inherit.create_block_schema(self.shared);
 
         // Merge new locale data in curren locale.
-        merge_schema(&mut self.shared.schema["__indir"][indir]["locale"], &locale);
+        merge_schema_owned(&mut self.shared.schema["__indir"][indir]["locale"], locale);
 
         self.out = UNPRINTABLE.to_string();
 
