@@ -102,6 +102,31 @@ pub fn update_schema(a: &mut Value, b: &Value) {
     a["version"] = VERSION.into();
 }
 
+/// Same as update_schema but takes ownership of `b` to avoid clones.
+pub fn update_schema_owned(a: &mut Value, b: Value) {
+    merge_schema_owned(a, b);
+
+    // Different environments may ignore or add capitalization in headers
+    // Note: after merge_schema_owned, b is consumed, so we read from a
+    let headers = &a["data"]["CONTEXT"]["HEADERS"];
+    if headers.get("requested-with-ajax").is_some() {
+        let val = a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = val.clone();
+        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = val;
+    } else if headers.get("Requested-With-Ajax").is_some() {
+        let val = a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = val.clone();
+        a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"] = val;
+    } else if headers.get("REQUESTED-WITH-AJAX").is_some() {
+        let val = a["data"]["CONTEXT"]["HEADERS"]["REQUESTED-WITH-AJAX"].clone();
+        a["data"]["CONTEXT"]["HEADERS"]["requested-with-ajax"] = val.clone();
+        a["data"]["CONTEXT"]["HEADERS"]["Requested-With-Ajax"] = val;
+    }
+
+    // Update version
+    a["version"] = VERSION.into();
+}
+
 /// Extract same level blocks positions.
 ///
 /// ```text

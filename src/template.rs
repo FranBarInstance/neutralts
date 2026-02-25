@@ -74,7 +74,7 @@ impl<'a> Template<'a> {
             }
         };
 
-        update_schema(&mut default_schema, &schema);
+        update_schema_owned(&mut default_schema, schema);
         let shared = Shared::new(default_schema.clone());
 
         Ok(Template {
@@ -177,7 +177,7 @@ impl<'a> Template<'a> {
     ///
     /// * `schema` - The JSON Value to be merged with the current schema.
     pub fn merge_schema_value(&mut self, schema: Value) {
-        update_schema(&mut self.schema, &schema);
+        update_schema_owned(&mut self.schema, schema);
     }
 
     /// Constructs a new `Template` instance from a file path and MessagePack schema bytes.
@@ -270,7 +270,7 @@ impl<'a> Template<'a> {
                 return Err(format!("Is not a valid MessagePack data: {}", e));
             }
         };
-        update_schema(&mut self.schema, &schema_value);
+        update_schema_owned(&mut self.schema, schema_value);
 
         Ok(())
     }
