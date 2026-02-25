@@ -50,6 +50,23 @@ pub fn merge_schema(a: &mut Value, b: &Value) {
     }
 }
 
+/// Same as merge_schema but takes ownership of `b` to avoid clones.
+/// Use this when you don't need `b` after the merge.
+pub fn merge_schema_owned(a: &mut Value, b: Value) {
+    match (a, b) {
+        (Value::Object(a_map), Value::Object(b_map)) => {
+            for (k, v) in b_map {
+                if let Some(va) = a_map.get_mut(&k) {
+                    merge_schema_owned(va, v);
+                } else {
+                    a_map.insert(k, v);
+                }
+            }
+        }
+        (a, b) => *a = b,
+    }
+}
+
 /// Merge schema and update some keys
 ///
 /// This is a thin wrapper around `merge_schema` that additionally:
@@ -750,7 +767,7 @@ pub fn filter_value_keys(value: &mut Value) {
             for (key, val) in obj.iter_mut() {
                 let new_key = escape_chars(&unescape_chars(key, true), true);
                 filter_value_keys(val);
-                new_obj.insert(new_key, val.clone());
+                new_obj.insert(new_key, std::mem::take(val));
             }
 
             *obj = new_obj;
