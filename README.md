@@ -85,6 +85,28 @@ The IPC approach introduces performance overhead due to inter-process communicat
 
 For most web applications, the security and interoperability benefits compensate for the performance overhead.
 
+### **Optimizing First Render (Large Schemas):**
+
+When working with large schemas (thousands of keys), the first render can be optimized using `render_once()` instead of `render()`. This method takes ownership of the schema instead of cloning it, providing significant performance improvements:
+
+| Schema Size | render() | render_once() | Speedup |
+|-------------|----------|---------------|---------|
+| 100 keys    | 0.09 ms  | 0.02 ms       | ~3.7x   |
+| 500 keys    | 0.32 ms  | 0.05 ms       | ~7x     |
+| 1000 keys   | 0.65 ms  | 0.06 ms       | ~10x    |
+| 2000 keys   | 1.15 ms  | 0.10 ms       | ~11x    |
+
+**When to use `render_once()`:**
+- Single render per template instance (most common use case)
+- Large schemas with thousands of keys
+- Memory-constrained environments
+
+**When NOT to use `render_once()`:**
+- Multiple renders from the same template instance
+- Template reuse scenarios
+
+After `render_once()`, the template cannot be reused because the schema is consumed. Use `render()` for reusable templates.
+
 ### **IPC Components:**
 - **IPC Server**: Universal standalone application (written in Rust) for all languages - download from: [IPC Server](https://github.com/FranBarInstance/neutral-ipc/releases)
 - **IPC Clients**: Language-specific libraries to include in your project - available at: [IPC Clients](https://github.com/FranBarInstance/neutral-ipc/tree/master/clients)
