@@ -1,4 +1,4 @@
-// pyo3 = { version = "0.26.0", features = [] }
+// pyo3 = { version = "0.26.2", features = [] }
 
 use crate::{bif::BifError, Value};
 use pyo3::prelude::*;
