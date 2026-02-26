@@ -1,9 +1,90 @@
 #[cfg(test)]
 mod tests {
     use crate::test_helpers::*;
+    use std::env;
     use std::fs;
+    use std::net::{TcpStream, ToSocketAddrs};
+    #[cfg(unix)]
+    use std::os::unix::net::UnixStream;
+    use std::path::Path;
     use std::process;
+    use std::time::Duration;
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn php_fpm_test_endpoint() -> Option<String> {
+        if let Ok(value) = env::var("NEUTRALTS_TEST_PHP_FPM") {
+            let value = value.trim();
+            if value.is_empty() {
+                return None;
+            }
+            if is_php_fpm_reachable(value) {
+                return Some(value.to_string());
+            }
+            return None;
+        }
+
+        let default_socket = crate::DEFAULT_OBJ_FPM;
+        if is_php_fpm_reachable(default_socket) {
+            Some(default_socket.to_string())
+        } else {
+            None
+        }
+    }
+
+    fn is_php_fpm_reachable(endpoint: &str) -> bool {
+        if let Some(path) = endpoint.strip_prefix("unix:") {
+            #[cfg(unix)]
+            {
+                return Path::new(path).exists() && UnixStream::connect(path).is_ok();
+            }
+            #[cfg(not(unix))]
+            {
+                return false;
+            }
+        }
+
+        let tcp_endpoint = endpoint.strip_prefix("tcp://").unwrap_or(endpoint);
+        let mut addrs = match tcp_endpoint.to_socket_addrs() {
+            Ok(a) => a,
+            Err(_) => return false,
+        };
+        if let Some(addr) = addrs.next() {
+            return TcpStream::connect_timeout(&addr, Duration::from_secs(1)).is_ok();
+        }
+        false
+    }
+
+    fn create_php_test_script() -> String {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let path = format!("tests/__obj_php_{}_{}.php", process::id(), nanos);
+        let script = r#"<?php
+function main($params = []) {
+    $schema = $GLOBALS['__NEUTRAL_SCHEMA__'] ?? null;
+    $schema_data = $GLOBALS['__NEUTRAL_SCHEMA_DATA__'] ?? null;
+
+    $schema_seen = is_array($schema) ? "yes" : "no";
+    $schema_data_kind = "none";
+    if (is_array($schema_data)) {
+        $schema_data_kind = "dict";
+    } else if (is_string($schema_data) || is_numeric($schema_data) || is_bool($schema_data)) {
+        $schema_data_kind = "scalar";
+    }
+
+    return [
+        "data" => [
+            "php_hello" => "Hello from PHP!",
+            "schema_seen" => $schema_seen,
+            "schema_data_kind" => $schema_data_kind,
+        ]
+    ];
+}
+"#;
+        fs::write(&path, script).unwrap();
+        path
+    }
 
     fn create_schema_data_test_script() -> String {
         let nanos = SystemTime::now()
@@ -228,7 +309,7 @@ mod tests {
 
         template.merge_schema_str(SCHEMA).unwrap();
         template.set_src_str(
-            "<div>{:obj; {\"engine\":\"php\",\"file\":\"tests/script.py\",\"fpm\":\"bad-endpoint\"} >> :}</div>",
+            "<div>{:obj; {\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"bad-endpoint\"} >> :}</div>",
         );
         let result = template.render();
         assert!(template.has_error());
@@ -483,5 +564,185 @@ mod tests {
 
         assert!(!template.has_error());
         assert_eq!(result, "<div>none|true</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_php_exec_conditional() {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+            return;
+        };
+
+        let script_path = create_php_test_script();
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                remove_test_script(&script_path);
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"{}\",\"fpm\":\"{}\",\"schema\":true,\"schema_data\":\"__test-nts\"}} >> {{:;local::php_hello:}}|{{:;local::schema_seen:}}|{{:;local::schema_data_kind:}} :}}</div>",
+            script_path,
+            fpm_endpoint
+        ));
+        let result = template.render();
+        remove_test_script(&script_path);
+
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>Hello from PHP!|yes|scalar</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_php() {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+            return;
+        };
+
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\"}} >> {{:;local::php_hello:}} :}}</div>",
+            fpm_endpoint
+        ));
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>Hello from PHP!</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_php_no_scope() {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+            return;
+        };
+
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\"}} >>  :}}{{:;local::php_hello:}}</div>",
+            fpm_endpoint
+        ));
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
+    #[test]
+    fn test_bif_obj_php_scope() {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+            return;
+        };
+
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:+obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\"}} >>  :}}{{:;local::php_hello:}}</div>",
+            fpm_endpoint
+        ));
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>Hello from PHP!</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_php_schema_false() {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+            return;
+        };
+
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\",\"schema\":false}} >> {{:;local::test_nts:}} :}}</div>",
+            fpm_endpoint
+        ));
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
+    #[test]
+    fn test_bif_obj_php_schema_true() {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+            return;
+        };
+
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\",\"schema\":true}} >> {{:;local::test_nts:}} :}}</div>",
+            fpm_endpoint
+        ));
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>nts</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_php_with_params() {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+            return;
+        };
+
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{ \"engine\":\"php\", \"file\": \"tests/script.php\", \"fpm\":\"{}\", \"params\": {{\"param1\":\"{{:;__test-nts:}}\"}} }} >> {{:;local::param1:}} :}}</div>",
+            fpm_endpoint
+        ));
+        let result = template.render();
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>nts</div>");
     }
 }
