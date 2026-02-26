@@ -257,7 +257,7 @@ Limitations
 
 Python is slow and executing Python as a subprocess is even slower, use "{:cache;" when possible.
 
-PHP via FPM adds network/socket overhead per call, use "{:cache;" when possible.
+In practice, PHP via FPM is usually faster than Python for `obj` calls. PHP via FPM still adds socket overhead per call, so use "{:cache;" when possible.
 
 It is not the same to use "obj" to replace multiple variables than to, for example, create a complete form, in the first case performance will be affected until it is unacceptable, in the second case the loss is likely not noticeable.
 
