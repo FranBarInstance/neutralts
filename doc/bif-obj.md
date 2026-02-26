@@ -47,6 +47,7 @@ Example Object:
     "engine": "Python",          // Optional, default "Python"
     "file": "script.py",         // Required, path to script
     "schema": false,             // Optional, default false
+    "schema_data": "__test-nts", // Optional, default none
     "venv": "/path/to/.env",     // Optional, default none
     "params": {},                // Optional, parameters passed to the script
     "callback": "main",          // Optional, default "main"
@@ -54,13 +55,14 @@ Example Object:
 }
 ```
 
-The keys "file", "params", "venv" and "template" accept variables `{:;varname:}`
+The keys "file", "params", "venv", "template" and "schema_data" accept variables `{:;varname:}`
 
 Example Script:
 
 ```python
 def main(params=None):
     schema = globals().get('__NEUTRAL_SCHEMA__')
+    schema_data = globals().get('__NEUTRAL_SCHEMA_DATA__')
     return {
         "data": {
             "varname": "Hello from Python!"
@@ -70,13 +72,24 @@ def main(params=None):
 
 `__NEUTRAL_SCHEMA__` (requires `"schema": true` in object) is read-only for accessing the schema. Access to `__NEUTRAL_SCHEMA__` can be slow, it is faster to use parameters.
 
+`__NEUTRAL_SCHEMA_DATA__` (requires `"schema_data": "..."`) sends only one resolved value from schema data:
+
+- Global data:
+  - `"schema_data": "varname"`
+  - `"schema_data": "varname->key->..."`
+- Local data:
+  - `"schema_data": "local::varname"`
+  - `"schema_data": "local::varname->key->..."`
+
+If the key does not exist, `__NEUTRAL_SCHEMA_DATA__` is `None`.
+
 It must return a dictionary where the variables are set in the format:
 
 ```text
 {
     "data": {
         "varname": "value",
-        "arrname: {
+        "arrname": {
             "key": "value"
         }
     }
@@ -145,6 +158,30 @@ Inline configuration with parameters:
         "params": {
             "name": "{:;varname:}"
         }
+    }
+:}
+```
+
+Using `schema_data`:
+```html
+{:obj;
+    {
+        "file": "scripts/data.py",
+        "schema_data": "__test-arr-nts"
+    }
+:}
+
+{:obj;
+    {
+        "file": "scripts/data.py",
+        "schema_data": "__test-obj-nts->level1-obj"
+    }
+:}
+
+{:obj;
+    {
+        "file": "scripts/data.py",
+        "schema_data": "local::array->text"
     }
 :}
 ```

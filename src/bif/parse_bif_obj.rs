@@ -3,7 +3,7 @@
 use crate::{
     bif::{constants::*, Bif, BifError, PythonExecutor},
     constants::*,
-    utils::is_empty_key,
+    utils::{is_empty_key, resolve_pointer},
     Value,
 };
 use std::fs;
@@ -106,6 +106,24 @@ impl<'a> Bif<'a> {
             }
         }
 
+        let schema_data = obj
+            .get("schema_data")
+            .and_then(|v| v.as_str())
+            .map(|schema_data_name| {
+                let (schema_root, key_name) = if schema_data_name.starts_with("local::") {
+                    (
+                        &self.shared.schema["__indir"][&self.inherit.indir]["data"],
+                        schema_data_name.strip_prefix("local::").unwrap_or(""),
+                    )
+                } else {
+                    (&self.shared.schema["data"], schema_data_name)
+                };
+
+                resolve_pointer(schema_root, key_name)
+                    .cloned()
+                    .unwrap_or(Value::Null)
+            });
+
         let result = PythonExecutor::exec_py(
             &file_path_obj,
             &obj["params"],
@@ -115,6 +133,7 @@ impl<'a> Bif<'a> {
             } else {
                 None
             },
+            schema_data.as_ref(),
             if venv_path.is_empty() {
                 None
             } else {
@@ -145,7 +164,7 @@ impl<'a> Bif<'a> {
     fn parse_obj_values(&mut self, value: &mut Value, is_recursive_call: bool) {
         if let Value::Object(map) = value {
             for (key, val) in map.iter_mut() {
-                if key == "file" || key == "template" || key == "venv" {
+                if key == "file" || key == "template" || key == "venv" || key == "schema_data" {
                     if let Value::String(s) = val {
                         if s.contains(BIF_OPEN) {
                             *val = Value::String(new_child_parse!(self, s, false));

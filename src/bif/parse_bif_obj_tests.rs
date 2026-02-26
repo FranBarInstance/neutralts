@@ -1,6 +1,51 @@
 #[cfg(test)]
 mod tests {
     use crate::test_helpers::*;
+    use std::fs;
+    use std::process;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn create_schema_data_test_script() -> String {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let path = format!(
+            "tests/__obj_schema_data_{}_{}.py",
+            process::id(),
+            nanos
+        );
+        let script = r#"def main(params=None):
+    data = globals().get('__NEUTRAL_SCHEMA_DATA__', None)
+    if data is None:
+        kind = 'none'
+        scalar = ''
+    elif isinstance(data, dict):
+        kind = 'dict'
+        scalar = ''
+    elif isinstance(data, list):
+        kind = 'list'
+        scalar = ''
+    else:
+        kind = 'scalar'
+        scalar = str(data)
+
+    schema_present = '__NEUTRAL_SCHEMA__' in globals()
+    return {
+        'data': {
+            'schema_data_kind': kind,
+            'schema_data_scalar': scalar,
+            'schema_present': schema_present
+        }
+    }
+"#;
+        fs::write(&path, script).unwrap();
+        path
+    }
+
+    fn remove_test_script(path: &str) {
+        let _ = fs::remove_file(path);
+    }
 
     #[test]
     fn test_bif_obj() {
@@ -272,5 +317,105 @@ mod tests {
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>nts</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_schema_data_scalar() {
+        let script_path = create_schema_data_test_script();
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                remove_test_script(&script_path);
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"file\":\"{}\",\"schema_data\":\"__test-nts\"}} >> {{:;local::schema_data_kind:}}|{{:;local::schema_data_scalar:}} :}}</div>",
+            script_path
+        ));
+        let result = template.render();
+        remove_test_script(&script_path);
+
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>scalar|nts</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_schema_data_list_global() {
+        let script_path = create_schema_data_test_script();
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                remove_test_script(&script_path);
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"file\":\"{}\",\"schema_data\":\"__test-arr-nts\"}} >> {{:;local::schema_data_kind:}} :}}</div>",
+            script_path
+        ));
+        let result = template.render();
+        remove_test_script(&script_path);
+
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>list</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_schema_data_dict_local() {
+        let script_path = create_schema_data_test_script();
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                remove_test_script(&script_path);
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:data; tests/local-data.json :}}{{:obj; {{\"file\":\"{}\",\"schema_data\":\"local::array\"}} >> {{:;local::schema_data_kind:}} :}}</div>",
+            script_path
+        ));
+        let result = template.render();
+        remove_test_script(&script_path);
+
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>dict</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_schema_data_missing_is_none() {
+        let script_path = create_schema_data_test_script();
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                remove_test_script(&script_path);
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"file\":\"{}\",\"schema_data\":\"local::missing-key\",\"schema\":true}} >> {{:;local::schema_data_kind:}}|{{:;local::schema_present:}} :}}</div>",
+            script_path
+        ));
+        let result = template.render();
+        remove_test_script(&script_path);
+
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>none|true</div>");
     }
 }

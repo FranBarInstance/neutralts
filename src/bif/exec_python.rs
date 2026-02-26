@@ -15,6 +15,7 @@ impl PythonExecutor {
         params_value: &Value,
         callback_name: &str,
         schema: Option<&Value>,
+        schema_data: Option<&Value>,
         venv_path: Option<&str>,
     ) -> Result<Value, BifError> {
         if let Some(venv) = venv_path {
@@ -26,7 +27,7 @@ impl PythonExecutor {
         Python::attach(|py| -> PyResult<Value> {
             let params = Self::prepare_python_params(py, params_value)?;
             Self::setup_python_path(py, file)?;
-            Self::execute_python_callback(py, file, callback_name, params, schema)
+            Self::execute_python_callback(py, file, callback_name, params, schema, schema_data)
         })
         .map_err(|e| BifError {
             msg: format!(
@@ -123,6 +124,7 @@ impl PythonExecutor {
         callback_name: &str,
         params: Py<PyAny>,
         schema: Option<&Value>,
+        schema_data: Option<&Value>,
     ) -> PyResult<Value> {
         let module_name = Self::extract_module_name(file)?;
         let module = PyModule::import(py, &module_name)?;
@@ -135,6 +137,15 @@ impl PythonExecutor {
         if let Some(schema_value) = schema {
             let schema_py = Self::prepare_python_params(py, schema_value)?;
             module.setattr("__NEUTRAL_SCHEMA__", schema_py)?;
+        }
+
+        if module.hasattr("__NEUTRAL_SCHEMA_DATA__")? {
+            module.delattr("__NEUTRAL_SCHEMA_DATA__")?;
+        }
+
+        if let Some(schema_data_value) = schema_data {
+            let schema_data_py = Self::prepare_python_params(py, schema_data_value)?;
+            module.setattr("__NEUTRAL_SCHEMA_DATA__", schema_data_py)?;
         }
 
         let callback_func = module.getattr(callback_name).map_err(|_| {
