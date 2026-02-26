@@ -543,6 +543,7 @@ status_param = template.get_status_param()
 
 # act accordingly at this point according to your framework
 ```
+[Neutral Starter Py](https://github.com/FranBarInstance/neutral-starter-py)
 [Python examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/python)
 
 
@@ -569,6 +570,7 @@ status_param = template.get_status_param()
 
 # act accordingly at this point according to your framework
 ```
+[Neutral Starter Py](https://github.com/FranBarInstance/neutral-starter-py)
 [Python examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples/python)
 
 
@@ -607,3 +609,4 @@ Neutral TS template engine
 - [Crate](https://crates.io/crates/neutralts)
 - [PYPI Package](https://pypi.org/project/neutraltemplate/)
 - [Examples](https://github.com/FranBarInstance/neutralts-docs/tree/master/examples)
+- [Neutral Starter Py](https://github.com/FranBarInstance/neutral-starter-py)
