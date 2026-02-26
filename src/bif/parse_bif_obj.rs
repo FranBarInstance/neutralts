@@ -124,8 +124,21 @@ impl<'a> Bif<'a> {
             None
         };
 
+        let default_python_venv = self.shared.schema["config"]["obj_python_venv"]
+            .as_str()
+            .unwrap_or("");
+        let default_php_venv = self.shared.schema["config"]["obj_php_venv"]
+            .as_str()
+            .unwrap_or("");
+        let default_php_fpm = self.shared.schema["config"]["obj_php_fpm"]
+            .as_str()
+            .unwrap_or("unix:/run/php/php-fpm.sock");
+
         let result = if engine == "python" {
-            let mut venv_path = obj["venv"].as_str().unwrap_or("").to_string();
+            let mut venv_path = obj["venv"]
+                .as_str()
+                .unwrap_or(default_python_venv)
+                .to_string();
 
             if !venv_path.is_empty() {
                 if let Some(stripped) = venv_path.strip_prefix('#') {
@@ -151,7 +164,20 @@ impl<'a> Bif<'a> {
             )
             .map_err(|e| self.bif_error(&e.msg))?
         } else {
-            let mut fpm_endpoint = obj["fpm"].as_str().unwrap_or(DEFAULT_OBJ_FPM).to_string();
+            let mut php_venv_path = obj["venv"]
+                .as_str()
+                .unwrap_or(default_php_venv)
+                .to_string();
+            if !php_venv_path.is_empty() {
+                if let Some(stripped) = php_venv_path.strip_prefix('#') {
+                    php_venv_path = format!("{}{}", self.inherit.current_dir, stripped);
+                }
+                if !Path::new(&php_venv_path).exists() {
+                    return Err(self.bif_error("venv path does not exist"));
+                }
+            }
+
+            let mut fpm_endpoint = obj["fpm"].as_str().unwrap_or(default_php_fpm).to_string();
             if let Some(stripped) = fpm_endpoint.strip_prefix('#') {
                 fpm_endpoint = format!("{}{}", self.inherit.current_dir, stripped);
             }
@@ -162,6 +188,11 @@ impl<'a> Bif<'a> {
                 obj["callback"].as_str().unwrap_or(DEFAULT_OBJ_CALLBACK),
                 schema,
                 schema_data.as_ref(),
+                if php_venv_path.is_empty() {
+                    None
+                } else {
+                    Some(php_venv_path.as_str())
+                },
                 &fpm_endpoint,
             )
             .map_err(|e| self.bif_error(&e.msg))?

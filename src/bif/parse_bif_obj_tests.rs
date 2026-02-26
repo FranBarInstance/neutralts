@@ -47,6 +47,17 @@ mod tests {
         false
     }
 
+    fn default_obj_php_fpm() -> String {
+        serde_json::from_str::<crate::Value>(crate::DEFAULT)
+            .ok()
+            .and_then(|schema| {
+                schema["config"]["obj_php_fpm"]
+                    .as_str()
+                    .map(|v| v.to_string())
+            })
+            .unwrap_or_else(|| "unix:/run/php/php-fpm.sock".to_string())
+    }
+
     fn php_fpm_test_endpoint() -> Option<String> {
         if let Ok(value) = env::var("NEUTRALTS_TEST_PHP_FPM") {
             let value = value.trim();
@@ -59,15 +70,17 @@ mod tests {
             return None;
         }
 
-        if let Some(path) = crate::DEFAULT_OBJ_FPM.strip_prefix("unix:") {
-            if Path::new(path).exists() && can_connect_php_fpm(crate::DEFAULT_OBJ_FPM) {
-                return Some(crate::DEFAULT_OBJ_FPM.to_string());
+        let default_endpoint = default_obj_php_fpm();
+
+        if let Some(path) = default_endpoint.strip_prefix("unix:") {
+            if Path::new(path).exists() && can_connect_php_fpm(&default_endpoint) {
+                return Some(default_endpoint);
             }
             return None;
         }
 
-        if can_connect_php_fpm(crate::DEFAULT_OBJ_FPM) {
-            return Some(crate::DEFAULT_OBJ_FPM.to_string());
+        if can_connect_php_fpm(&default_endpoint) {
+            return Some(default_endpoint);
         }
         None
     }
@@ -79,7 +92,7 @@ mod tests {
                 eprintln!(
                     "[SKIP] {}: PHP-FPM not available. Set NEUTRALTS_TEST_PHP_FPM or ensure {} exists.",
                     test_name,
-                    crate::DEFAULT_OBJ_FPM
+                    default_obj_php_fpm()
                 );
                 None
             }

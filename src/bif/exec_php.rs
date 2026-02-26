@@ -33,6 +33,7 @@ $callback = $payload["callback"] ?? "main";
 $params = $payload["params"] ?? [];
 $GLOBALS["__NEUTRAL_SCHEMA__"] = $payload["schema"] ?? null;
 $GLOBALS["__NEUTRAL_SCHEMA_DATA__"] = $payload["schema_data"] ?? null;
+$GLOBALS["__NEUTRAL_VENV__"] = $payload["venv"] ?? null;
 
 if (!is_string($script_file) || $script_file === "" || !is_file($script_file)) {
     echo json_encode(["__neutralts_obj_error" => "obj script not found"]);
@@ -116,6 +117,7 @@ impl PhpExecutor {
         callback_name: &str,
         schema: Option<&Value>,
         schema_data: Option<&Value>,
+        venv_path: Option<&str>,
         fpm_endpoint: &str,
     ) -> Result<Value, BifError> {
         let bridge_path = Self::bridge_path_for(file)?;
@@ -140,6 +142,7 @@ impl PhpExecutor {
             "params": params_value,
             "schema": schema.cloned().unwrap_or(Value::Null),
             "schema_data": schema_data.cloned().unwrap_or(Value::Null),
+            "venv": venv_path.unwrap_or(""),
         });
         let body = serde_json::to_vec(&payload).map_err(|e| BifError {
             msg: format!("invalid php payload: {}", e),

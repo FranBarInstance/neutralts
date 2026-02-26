@@ -524,4 +524,3 @@ pub const DIV_FETCH_CLICK: &str = r#"
 
 pub const DEFAULT_OBJ_ENGINE: &str = "python";
 pub const DEFAULT_OBJ_CALLBACK: &str = "main";
-pub const DEFAULT_OBJ_FPM: &str = "unix:/run/php/php-fpm.sock";

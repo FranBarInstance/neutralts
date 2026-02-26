@@ -10,6 +10,9 @@ pub const DEFAULT: &str = r#"{
             "show": true
         },
         "app": {},
+        "obj_python_venv": "",
+        "obj_php_venv": "",
+        "obj_php_fpm": "unix:/run/php/php-fpm.sock",
         "cache_prefix": "neutral-cache",
         "cache_dir": "",
         "cache_on_post": false,

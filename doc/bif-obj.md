@@ -48,8 +48,8 @@ Example Object:
     "file": "script.py",         // Required, path to script
     "schema": false,             // Optional, default false
     "schema_data": "__test-nts", // Optional, default none
-    "venv": "/path/to/.env",     // Optional, default none
-    "fpm": "unix:/run/php/php-fpm.sock", // Optional for PHP, default shown
+    "venv": "/path/to/.env",     // Optional, overrides config default
+    "fpm": "unix:/run/php/php-fpm.sock", // Optional for PHP, overrides config default
     "params": {},                // Optional, parameters passed to the script
     "callback": "main",          // Optional, default "main"
     "template": "template.ntpl"  // Optional, template to process the result
@@ -57,6 +57,15 @@ Example Object:
 ```
 
 The keys "file", "params", "venv", "fpm", "template" and "schema_data" accept variables `{:;varname:}`
+
+Examples:
+
+```json
+{
+    "venv": "{:;VENV_PATH:}",
+    "fpm": "{:;PHP_FPM_ENDPOINT:}"
+}
+```
 
 Example Script:
 
@@ -106,7 +115,21 @@ For PHP:
   - `"unix:/run/php/php-fpm.sock"`
   - `"tcp://127.0.0.1:9000"`
   - `"127.0.0.1:9000"`
-- If `"fpm"` is not set, default is `"unix:/run/php/php-fpm.sock"`.
+- If `"fpm"` is not set, default is `config.obj_php_fpm`.
+
+Global defaults are read from schema config:
+
+```json
+{
+  "config": {
+    "obj_python_venv": "",
+    "obj_php_venv": "",
+    "obj_php_fpm": "unix:/run/php/php-fpm.sock"
+  }
+}
+```
+
+For distributable objects/plugins, avoid hardcoding `"venv"` or `"fpm"` in the object JSON. Let each installation define them in `config`.
 
 It must return a dictionary where the variables are set in the format:
 
