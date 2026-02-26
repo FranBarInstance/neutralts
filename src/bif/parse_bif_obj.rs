@@ -95,6 +95,10 @@ impl<'a> Bif<'a> {
         if !Path::new(&file_path_obj).exists() {
             return Err(self.bif_error(BIF_ERROR_OBJ_FILE_NOT_FOUND));
         }
+        file_path_obj = fs::canonicalize(&file_path_obj)
+            .map_err(|e| self.bif_error(&format!("Failed to canonicalize obj script: {}", e)))?
+            .to_string_lossy()
+            .into_owned();
 
         let schema_data = obj
             .get("schema_data")

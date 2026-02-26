@@ -4,54 +4,86 @@ mod tests {
     use std::env;
     use std::fs;
     use std::net::{TcpStream, ToSocketAddrs};
-    #[cfg(unix)]
     use std::os::unix::net::UnixStream;
     use std::path::Path;
     use std::process;
-    use std::time::Duration;
-    use std::time::{SystemTime, UNIX_EPOCH};
+    use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+    fn set_php_src(template: &mut crate::Template, src: &str, fpm_endpoint: &str) {
+        template.set_src_str(&src.replace("__FPM__", fpm_endpoint));
+    }
+
+    fn set_php_src_with_script(
+        template: &mut crate::Template,
+        src: &str,
+        script_path: &str,
+        fpm_endpoint: &str,
+    ) {
+        let src = src
+            .replace("__SCRIPT__", script_path)
+            .replace("__FPM__", fpm_endpoint);
+        template.set_src_str(&src);
+    }
+
+    fn set_python_src_with_script(template: &mut crate::Template, src: &str, script_path: &str) {
+        template.set_src_str(&src.replace("__SCRIPT__", script_path));
+    }
+
+    fn can_connect_php_fpm(endpoint: &str) -> bool {
+        if let Some(path) = endpoint.strip_prefix("unix:") {
+            return UnixStream::connect(path).is_ok();
+        }
+
+        if let Some(address) = endpoint.strip_prefix("tcp://") {
+            let Ok(mut addrs) = address.to_socket_addrs() else {
+                return false;
+            };
+            let Some(addr) = addrs.next() else {
+                return false;
+            };
+            return TcpStream::connect_timeout(&addr, Duration::from_millis(250)).is_ok();
+        }
+
+        false
+    }
 
     fn php_fpm_test_endpoint() -> Option<String> {
         if let Ok(value) = env::var("NEUTRALTS_TEST_PHP_FPM") {
             let value = value.trim();
-            if value.is_empty() {
+            if value.is_empty() || value.eq_ignore_ascii_case("skip") {
                 return None;
             }
-            if is_php_fpm_reachable(value) {
+            if can_connect_php_fpm(value) {
                 return Some(value.to_string());
             }
             return None;
         }
 
-        let default_socket = crate::DEFAULT_OBJ_FPM;
-        if is_php_fpm_reachable(default_socket) {
-            Some(default_socket.to_string())
-        } else {
-            None
+        if let Some(path) = crate::DEFAULT_OBJ_FPM.strip_prefix("unix:") {
+            if Path::new(path).exists() && can_connect_php_fpm(crate::DEFAULT_OBJ_FPM) {
+                return Some(crate::DEFAULT_OBJ_FPM.to_string());
+            }
+            return None;
         }
+
+        if can_connect_php_fpm(crate::DEFAULT_OBJ_FPM) {
+            return Some(crate::DEFAULT_OBJ_FPM.to_string());
+        }
+        None
     }
 
-    fn is_php_fpm_reachable(endpoint: &str) -> bool {
-        if let Some(path) = endpoint.strip_prefix("unix:") {
-            #[cfg(unix)]
-            {
-                return Path::new(path).exists() && UnixStream::connect(path).is_ok();
-            }
-            #[cfg(not(unix))]
-            {
-                return false;
+    fn php_fpm_test_endpoint_or_skip(test_name: &str) -> Option<String> {
+        match php_fpm_test_endpoint() {
+            Some(endpoint) => Some(endpoint),
+            None => {
+                eprintln!(
+                    "[SKIP] {}: PHP-FPM not available. Set NEUTRALTS_TEST_PHP_FPM or ensure {} exists.",
+                    test_name,
+                    crate::DEFAULT_OBJ_FPM
+                );
+                None
             }
         }
-
-        let tcp_endpoint = endpoint.strip_prefix("tcp://").unwrap_or(endpoint);
-        let mut addrs = match tcp_endpoint.to_socket_addrs() {
-            Ok(a) => a,
-            Err(_) => return false,
-        };
-        if let Some(addr) = addrs.next() {
-            return TcpStream::connect_timeout(&addr, Duration::from_secs(1)).is_ok();
-        }
-        false
     }
 
     fn create_php_test_script() -> String {
@@ -430,10 +462,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"file\":\"{}\",\"schema_data\":\"__test-nts\"}} >> {{:;local::schema_data_kind:}}|{{:;local::schema_data_scalar:}} :}}</div>",
-            script_path
-        ));
+        set_python_src_with_script(
+            &mut template,
+            "<div>{:obj; {\"file\":\"__SCRIPT__\",\"schema_data\":\"__test-nts\"} >> {:;local::schema_data_kind:}|{:;local::schema_data_scalar:} :}</div>",
+            &script_path,
+        );
         let result = template.render();
         remove_test_script(&script_path);
 
@@ -455,10 +488,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"file\":\"{}\",\"schema_data\":\"__test-arr-nts\"}} >> {{:;local::schema_data_kind:}} :}}</div>",
-            script_path
-        ));
+        set_python_src_with_script(
+            &mut template,
+            "<div>{:obj; {\"file\":\"__SCRIPT__\",\"schema_data\":\"__test-arr-nts\"} >> {:;local::schema_data_kind:} :}</div>",
+            &script_path,
+        );
         let result = template.render();
         remove_test_script(&script_path);
 
@@ -480,10 +514,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"file\":\"{}\",\"schema_data\":\"__test-obj-nts->level1-obj->level2-obj->level2\"}} >> {{:;local::schema_data_kind:}}|{{:;local::schema_data_scalar:}} :}}</div>",
-            script_path
-        ));
+        set_python_src_with_script(
+            &mut template,
+            "<div>{:obj; {\"file\":\"__SCRIPT__\",\"schema_data\":\"__test-obj-nts->level1-obj->level2-obj->level2\"} >> {:;local::schema_data_kind:}|{:;local::schema_data_scalar:} :}</div>",
+            &script_path,
+        );
         let result = template.render();
         remove_test_script(&script_path);
 
@@ -505,10 +540,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:data; tests/local-data.json :}}{{:obj; {{\"file\":\"{}\",\"schema_data\":\"local::array\"}} >> {{:;local::schema_data_kind:}} :}}</div>",
-            script_path
-        ));
+        set_python_src_with_script(
+            &mut template,
+            "<div>{:data; tests/local-data.json :}{:obj; {\"file\":\"__SCRIPT__\",\"schema_data\":\"local::array\"} >> {:;local::schema_data_kind:} :}</div>",
+            &script_path,
+        );
         let result = template.render();
         remove_test_script(&script_path);
 
@@ -530,10 +566,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:data; tests/local-data.json :}}{{:obj; {{\"file\":\"{}\",\"schema_data\":\"local::nested-obj->Lorem->Ipsum->Dolor->Sit->Amet\"}} >> {{:;local::schema_data_kind:}}|{{:;local::schema_data_scalar:}} :}}</div>",
-            script_path
-        ));
+        set_python_src_with_script(
+            &mut template,
+            "<div>{:data; tests/local-data.json :}{:obj; {\"file\":\"__SCRIPT__\",\"schema_data\":\"local::nested-obj->Lorem->Ipsum->Dolor->Sit->Amet\"} >> {:;local::schema_data_kind:}|{:;local::schema_data_scalar:} :}</div>",
+            &script_path,
+        );
         let result = template.render();
         remove_test_script(&script_path);
 
@@ -555,10 +592,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"file\":\"{}\",\"schema_data\":\"local::missing-key\",\"schema\":true}} >> {{:;local::schema_data_kind:}}|{{:;local::schema_present:}} :}}</div>",
-            script_path
-        ));
+        set_python_src_with_script(
+            &mut template,
+            "<div>{:obj; {\"file\":\"__SCRIPT__\",\"schema_data\":\"local::missing-key\",\"schema\":true} >> {:;local::schema_data_kind:}|{:;local::schema_present:} :}</div>",
+            &script_path,
+        );
         let result = template.render();
         remove_test_script(&script_path);
 
@@ -568,7 +606,8 @@ function main($params = []) {
 
     #[test]
     fn test_bif_obj_php_exec_conditional() {
-        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint_or_skip("test_bif_obj_php_exec_conditional")
+        else {
             return;
         };
 
@@ -584,11 +623,12 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"{}\",\"fpm\":\"{}\",\"schema\":true,\"schema_data\":\"__test-nts\"}} >> {{:;local::php_hello:}}|{{:;local::schema_seen:}}|{{:;local::schema_data_kind:}} :}}</div>",
-            script_path,
-            fpm_endpoint
-        ));
+        set_php_src_with_script(
+            &mut template,
+            "<div>{:obj; {\"engine\":\"php\",\"file\":\"__SCRIPT__\",\"fpm\":\"__FPM__\",\"schema\":true,\"schema_data\":\"__test-nts\"} >> {:;local::php_hello:}|{:;local::schema_seen:}|{:;local::schema_data_kind:} :}</div>",
+            &script_path,
+            &fpm_endpoint,
+        );
         let result = template.render();
         remove_test_script(&script_path);
 
@@ -598,7 +638,7 @@ function main($params = []) {
 
     #[test]
     fn test_bif_obj_php() {
-        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint_or_skip("test_bif_obj_php") else {
             return;
         };
 
@@ -612,10 +652,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\"}} >> {{:;local::php_hello:}} :}}</div>",
-            fpm_endpoint
-        ));
+        set_php_src(
+            &mut template,
+            "<div>{:obj; {\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"__FPM__\"} >> {:;local::php_hello:} :}</div>",
+            &fpm_endpoint,
+        );
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>Hello from PHP!</div>");
@@ -623,7 +664,7 @@ function main($params = []) {
 
     #[test]
     fn test_bif_obj_php_no_scope() {
-        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint_or_skip("test_bif_obj_php_no_scope") else {
             return;
         };
 
@@ -637,10 +678,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\"}} >>  :}}{{:;local::php_hello:}}</div>",
-            fpm_endpoint
-        ));
+        set_php_src(
+            &mut template,
+            "<div>{:obj; {\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"__FPM__\"} >>  :}{:;local::php_hello:}</div>",
+            &fpm_endpoint,
+        );
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div></div>");
@@ -648,7 +690,7 @@ function main($params = []) {
 
     #[test]
     fn test_bif_obj_php_scope() {
-        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint_or_skip("test_bif_obj_php_scope") else {
             return;
         };
 
@@ -662,10 +704,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:+obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\"}} >>  :}}{{:;local::php_hello:}}</div>",
-            fpm_endpoint
-        ));
+        set_php_src(
+            &mut template,
+            "<div>{:+obj; {\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"__FPM__\"} >>  :}{:;local::php_hello:}</div>",
+            &fpm_endpoint,
+        );
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>Hello from PHP!</div>");
@@ -673,7 +716,8 @@ function main($params = []) {
 
     #[test]
     fn test_bif_obj_php_schema_false() {
-        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint_or_skip("test_bif_obj_php_schema_false")
+        else {
             return;
         };
 
@@ -687,10 +731,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\",\"schema\":false}} >> {{:;local::test_nts:}} :}}</div>",
-            fpm_endpoint
-        ));
+        set_php_src(
+            &mut template,
+            "<div>{:obj; {\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"__FPM__\",\"schema\":false} >> {:;local::test_nts:} :}</div>",
+            &fpm_endpoint,
+        );
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div></div>");
@@ -698,7 +743,8 @@ function main($params = []) {
 
     #[test]
     fn test_bif_obj_php_schema_true() {
-        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+        let Some(fpm_endpoint) = php_fpm_test_endpoint_or_skip("test_bif_obj_php_schema_true")
+        else {
             return;
         };
 
@@ -712,10 +758,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"{}\",\"schema\":true}} >> {{:;local::test_nts:}} :}}</div>",
-            fpm_endpoint
-        ));
+        set_php_src(
+            &mut template,
+            "<div>{:obj; {\"engine\":\"php\",\"file\":\"tests/script.php\",\"fpm\":\"__FPM__\",\"schema\":true} >> {:;local::test_nts:} :}</div>",
+            &fpm_endpoint,
+        );
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>nts</div>");
@@ -723,7 +770,11 @@ function main($params = []) {
 
     #[test]
     fn test_bif_obj_php_with_params() {
-        let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+        // let Some(fpm_endpoint) = php_fpm_test_endpoint() else {
+        //     return;
+        // };
+        let Some(fpm_endpoint) = php_fpm_test_endpoint_or_skip("test_bif_obj_php_with_params")
+        else {
             return;
         };
 
@@ -737,10 +788,11 @@ function main($params = []) {
         };
 
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(&format!(
-            "<div>{{:obj; {{ \"engine\":\"php\", \"file\": \"tests/script.php\", \"fpm\":\"{}\", \"params\": {{\"param1\":\"{{:;__test-nts:}}\"}} }} >> {{:;local::param1:}} :}}</div>",
-            fpm_endpoint
-        ));
+        set_php_src(
+            &mut template,
+            "<div>{:obj; { \"engine\":\"php\", \"file\": \"tests/script.php\", \"fpm\":\"__FPM__\", \"params\": {\"param1\":\"{:;__test-nts:}\"} } >> {:;local::param1:} :}</div>",
+            &fpm_endpoint,
+        );
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(result, "<div>nts</div>");

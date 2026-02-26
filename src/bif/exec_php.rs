@@ -1,6 +1,6 @@
 use crate::{bif::BifError, Value};
 use std::fs;
-use std::io::{Read, Write};
+use std::io::{ErrorKind, Read, Write};
 use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 #[cfg(unix)]
 use std::os::unix::net::UnixStream;
@@ -16,7 +16,6 @@ const FCGI_STDERR: u8 = 7;
 const FCGI_RESPONDER: u16 = 1;
 const FCGI_REQUEST_ID: u16 = 1;
 const PHP_FPM_TIMEOUT_SECS: u64 = 5;
-const BRIDGE_PATH: &str = "/tmp/neutralts_obj_bridge.php";
 const BRIDGE_ERROR_KEY: &str = "__neutralts_obj_error";
 
 const BRIDGE_SCRIPT: &str = r#"<?php
@@ -119,7 +118,8 @@ impl PhpExecutor {
         schema_data: Option<&Value>,
         fpm_endpoint: &str,
     ) -> Result<Value, BifError> {
-        Self::ensure_bridge_script()?;
+        let bridge_path = Self::bridge_path_for(file)?;
+        Self::ensure_bridge_script(&bridge_path)?;
 
         let endpoint = Self::parse_endpoint(fpm_endpoint).map_err(|e| BifError {
             msg: e,
@@ -148,7 +148,7 @@ impl PhpExecutor {
             src: file.to_string(),
         })?;
 
-        Self::send_fastcgi_request(&mut stream, &body).map_err(|e| BifError {
+        Self::send_fastcgi_request(&mut stream, &body, &bridge_path).map_err(|e| BifError {
             msg: format!("php-fpm request failed: {}", e),
             name: "php_callback".to_string(),
             file: file.to_string(),
@@ -195,12 +195,40 @@ impl PhpExecutor {
         Ok(value)
     }
 
-    fn ensure_bridge_script() -> Result<(), BifError> {
-        if Path::new(BRIDGE_PATH).exists() {
+    fn bridge_path_for(file: &str) -> Result<String, BifError> {
+        let file_path = Path::new(file);
+        let parent = file_path.parent().unwrap_or_else(|| Path::new("."));
+        let parent_abs = if parent.is_absolute() {
+            parent.to_path_buf()
+        } else {
+            std::env::current_dir()
+                .map_err(|e| BifError {
+                    msg: format!("failed to get current_dir: {}", e),
+                    name: "php_callback".to_string(),
+                    file: file.to_string(),
+                    src: file.to_string(),
+                })?
+                .join(parent)
+        };
+        let bridge_path = parent_abs.join(".neutralts_obj_bridge.php");
+        let bridge = bridge_path
+            .to_str()
+            .ok_or_else(|| BifError {
+                msg: "invalid bridge path encoding".to_string(),
+                name: "php_callback".to_string(),
+                file: file.to_string(),
+                src: file.to_string(),
+            })?
+            .to_string();
+        Ok(bridge)
+    }
+
+    fn ensure_bridge_script(bridge_path: &str) -> Result<(), BifError> {
+        if Path::new(bridge_path).exists() {
             return Ok(());
         }
 
-        fs::write(BRIDGE_PATH, BRIDGE_SCRIPT).map_err(|e| BifError {
+        fs::write(bridge_path, BRIDGE_SCRIPT).map_err(|e| BifError {
             msg: format!("failed to create php bridge: {}", e),
             name: "php_callback".to_string(),
             file: "".to_string(),
@@ -272,7 +300,11 @@ impl PhpExecutor {
         }
     }
 
-    fn send_fastcgi_request(stream: &mut FpmStream, body: &[u8]) -> Result<(), String> {
+    fn send_fastcgi_request(
+        stream: &mut FpmStream,
+        body: &[u8],
+        bridge_path: &str,
+    ) -> Result<(), String> {
         let begin_body = [
             (FCGI_RESPONDER >> 8) as u8,
             (FCGI_RESPONDER & 0xFF) as u8,
@@ -286,8 +318,8 @@ impl PhpExecutor {
         Self::write_record(stream, FCGI_BEGIN_REQUEST, FCGI_REQUEST_ID, &begin_body)?;
 
         let params = vec![
-            ("SCRIPT_FILENAME", BRIDGE_PATH.to_string()),
-            ("SCRIPT_NAME", BRIDGE_PATH.to_string()),
+            ("SCRIPT_FILENAME", bridge_path.to_string()),
+            ("SCRIPT_NAME", bridge_path.to_string()),
             ("REQUEST_METHOD", "POST".to_string()),
             ("CONTENT_TYPE", "application/json".to_string()),
             ("CONTENT_LENGTH", body.len().to_string()),
@@ -326,7 +358,34 @@ impl PhpExecutor {
 
         loop {
             let mut header = [0u8; 8];
-            stream.read_exact(&mut header).map_err(|e| e.to_string())?;
+            match stream.read_exact(&mut header) {
+                Ok(_) => {}
+                Err(e) if e.kind() == ErrorKind::UnexpectedEof => {
+                    // Some FPM setups close the socket immediately after STDOUT/STDERR
+                    // without sending END_REQUEST. If we already have payload, treat as done.
+                    if !stdout.is_empty() || !stderr.is_empty() {
+                        break;
+                    }
+                    return Err(e.to_string());
+                }
+                Err(e) => return Err(e.to_string()),
+            }
+
+            // FastCGI response must start with version 1.
+            // If not, this is likely not a FastCGI endpoint (for example, HTTP server on :9000).
+            if header[0] != FCGI_VERSION_1 {
+                let prefix = String::from_utf8_lossy(&header);
+                if prefix.starts_with("HTTP/") {
+                    return Err(
+                        "invalid FastCGI response: endpoint looks like HTTP, not PHP-FPM"
+                            .to_string(),
+                    );
+                }
+                return Err(format!(
+                    "invalid FastCGI response: unsupported version {}",
+                    header[0]
+                ));
+            }
 
             let record_type = header[1];
             let request_id = u16::from_be_bytes([header[2], header[3]]);
@@ -335,11 +394,29 @@ impl PhpExecutor {
 
             let mut content = vec![0u8; content_length];
             if content_length > 0 {
-                stream.read_exact(&mut content).map_err(|e| e.to_string())?;
+                match stream.read_exact(&mut content) {
+                    Ok(_) => {}
+                    Err(e) if e.kind() == ErrorKind::UnexpectedEof => {
+                        if !stdout.is_empty() || !stderr.is_empty() {
+                            break;
+                        }
+                        return Err(e.to_string());
+                    }
+                    Err(e) => return Err(e.to_string()),
+                }
             }
             if padding_length > 0 {
                 let mut padding = vec![0u8; padding_length];
-                stream.read_exact(&mut padding).map_err(|e| e.to_string())?;
+                match stream.read_exact(&mut padding) {
+                    Ok(_) => {}
+                    Err(e) if e.kind() == ErrorKind::UnexpectedEof => {
+                        if !stdout.is_empty() || !stderr.is_empty() {
+                            break;
+                        }
+                        return Err(e.to_string());
+                    }
+                    Err(e) => return Err(e.to_string()),
+                }
             }
 
             if request_id != FCGI_REQUEST_ID {
