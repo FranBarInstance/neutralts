@@ -1,6 +1,9 @@
 #![doc = include_str!("../../doc/bif-each.md")]
 
-use crate::{bif::constants::*, bif::Bif, bif::BifError, json, utils::resolve_pointer, utils::extract_blocks, Value};
+use crate::{
+    bif::constants::*, bif::Bif, bif::BifError, json, utils::extract_blocks,
+    utils::resolve_pointer, Value,
+};
 
 impl<'a> Bif<'a> {
     /*
@@ -108,8 +111,7 @@ impl<'a> Bif<'a> {
             self.inherit.create_block_schema(self.shared);
         }
 
-        let mut block_parser =
-            crate::block_parser::BlockParser::new(self.shared, child_inherit);
+        let mut block_parser = crate::block_parser::BlockParser::new(self.shared, child_inherit);
         let code = block_parser.parse_with_blocks(&self.code, blocks, self.only);
 
         if self.mod_scope {

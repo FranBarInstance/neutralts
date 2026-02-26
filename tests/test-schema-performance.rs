@@ -190,7 +190,10 @@ fn test_render_once_large_schema() {
     // Generate a schema with many keys
     let mut data = serde_json::Map::new();
     for i in 0..100 {
-        data.insert(format!("key_{}", i), serde_json::json!(format!("value_{}", i)));
+        data.insert(
+            format!("key_{}", i),
+            serde_json::json!(format!("value_{}", i)),
+        );
     }
 
     let schema = serde_json::json!({
@@ -257,7 +260,10 @@ fn test_render_once_vs_render_performance_comparison() {
 
     // render_once should be at least as fast as render (usually faster)
     // We don't assert a specific speedup, just that it works correctly
-    assert!(avg_once_ms > 0.0, "render_once should complete in measurable time");
+    assert!(
+        avg_once_ms > 0.0,
+        "render_once should complete in measurable time"
+    );
 }
 
 /// Generate a large schema with the specified number of keys
@@ -310,7 +316,10 @@ fn test_large_schema_performance() {
     let iterations = 10;
 
     println!("\n=== Large Schema Performance Test ===\n");
-    println!("{:<10} {:<15} {:<15} {:<15}", "Keys", "Size (KB)", "Time (ms)", "Per key (µs)");
+    println!(
+        "{:<10} {:<15} {:<15} {:<15}",
+        "Keys", "Size (KB)", "Time (ms)", "Per key (µs)"
+    );
     println!("{}", "-".repeat(55));
 
     for num_keys in schema_sizes {
@@ -359,7 +368,11 @@ fn test_schema_merge_performance() {
     let schema_str = serde_json::to_string(&schema).unwrap();
 
     println!("\n=== Schema Merge Performance Test ===\n");
-    println!("Schema size: {} bytes ({:.1} KB)", schema_str.len(), schema_str.len() as f64 / 1024.0);
+    println!(
+        "Schema size: {} bytes ({:.1} KB)",
+        schema_str.len(),
+        schema_str.len() as f64 / 1024.0
+    );
 
     // Test merge_schema_str (parses JSON)
     let iterations = 20;
@@ -402,7 +415,10 @@ fn test_render_once_performance() {
 
     println!("\n=== render() vs render_once() Performance Comparison ===\n");
     println!("Measuring: Template creation + render (full pipeline per iteration)");
-    println!("{:<10} {:<15} {:<15} {:<12} {:<12}", "Keys", "render (ms)", "render_once (ms)", "Speedup", "Savings");
+    println!(
+        "{:<10} {:<15} {:<15} {:<12} {:<12}",
+        "Keys", "render (ms)", "render_once (ms)", "Speedup", "Savings"
+    );
     println!("{}", "-".repeat(70));
 
     for num_keys in schema_sizes {
@@ -457,7 +473,11 @@ fn test_full_pipeline_performance() {
     let schema_str = serde_json::to_string(&schema).unwrap();
 
     println!("\n=== Full Pipeline Performance (Template creation + render) ===\n");
-    println!("Schema size: {} bytes ({:.1} KB)", schema_str.len(), schema_str.len() as f64 / 1024.0);
+    println!(
+        "Schema size: {} bytes ({:.1} KB)",
+        schema_str.len(),
+        schema_str.len() as f64 / 1024.0
+    );
 
     let iterations = 20;
 
@@ -485,8 +505,14 @@ fn test_full_pipeline_performance() {
     let avg_once_ms = (total_time_once / iterations as u128) as f64 / 1_000_000.0;
     let speedup = avg_render_ms / avg_once_ms.max(0.001);
 
-    println!("Template::from_file_value + render():     {:.2} ms", avg_render_ms);
-    println!("Template::from_file_value + render_once(): {:.2} ms", avg_once_ms);
+    println!(
+        "Template::from_file_value + render():     {:.2} ms",
+        avg_render_ms
+    );
+    println!(
+        "Template::from_file_value + render_once(): {:.2} ms",
+        avg_once_ms
+    );
     println!("Speedup: {:.2}x", speedup);
     println!();
 }

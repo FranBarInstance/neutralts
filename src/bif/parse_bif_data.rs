@@ -36,7 +36,10 @@ impl<'a> Bif<'a> {
                 .as_object_mut()
                 .and_then(|obj| obj.remove("data"))
                 .unwrap_or(Value::Null);
-            merge_schema_owned(&mut self.shared.schema["__indir"][indir]["data"], merge_data);
+            merge_schema_owned(
+                &mut self.shared.schema["__indir"][indir]["data"],
+                merge_data,
+            );
 
             self.out = UNPRINTABLE.to_string();
 
@@ -96,7 +99,10 @@ impl<'a> Bif<'a> {
             .as_object_mut()
             .and_then(|obj| obj.remove("data"))
             .unwrap_or(Value::Null);
-        merge_schema_owned(&mut self.shared.schema["__indir"][indir]["data"], merge_data);
+        merge_schema_owned(
+            &mut self.shared.schema["__indir"][indir]["data"],
+            merge_data,
+        );
 
         self.out = UNPRINTABLE.to_string();
 

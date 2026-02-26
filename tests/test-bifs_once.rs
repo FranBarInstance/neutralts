@@ -8,7 +8,8 @@ fn test_bif_comments() {
         "comments": "keep"
     }
 }
-"#.trim();
+"#
+    .trim();
 
     let mut template = match neutralts::Template::new() {
         Ok(tpl) => tpl,
@@ -274,7 +275,8 @@ fn test_bif_complete_tpl() {
             }
         }
     }
-    "#.trim();
+    "#
+    .trim();
     let out = r#"
 <!DOCTYPE html>
 <html lang=es>
@@ -362,7 +364,8 @@ fn test_bif_complete_tpl() {
         </div>
     </body>
 </html>
-"#.trim();
+"#
+    .trim();
     let mut template = match neutralts::Template::new() {
         Ok(tpl) => tpl,
         Err(error) => {

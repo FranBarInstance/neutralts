@@ -1,7 +1,7 @@
 #![doc = include_str!("../../doc/bif-obj.md")]
 
 use crate::{
-    bif::{constants::*, Bif, BifError, PythonExecutor},
+    bif::{constants::*, Bif, BifError, PhpExecutor, PythonExecutor},
     constants::*,
     utils::{is_empty_key, resolve_pointer},
     Value,
@@ -74,9 +74,11 @@ impl<'a> Bif<'a> {
         let mut obj: Value = serde_json::from_str(obj_raw.trim())
             .map_err(|e| self.bif_error(&format!("Failed to parse JSON: {}", e)))?;
 
-        let engine = obj["engine"].as_str().unwrap_or(DEFAULT_OBJ_ENGINE);
-        if engine.to_lowercase() != "python" {
-            // currently only Python is supported
+        let engine = obj["engine"]
+            .as_str()
+            .unwrap_or(DEFAULT_OBJ_ENGINE)
+            .to_lowercase();
+        if engine != "python" && engine != "php" {
             return Err(self.bif_error(BIF_ERROR_ONLY_PYTHON_ENGINE));
         }
 
@@ -92,18 +94,6 @@ impl<'a> Bif<'a> {
 
         if !Path::new(&file_path_obj).exists() {
             return Err(self.bif_error(BIF_ERROR_OBJ_FILE_NOT_FOUND));
-        }
-
-        let mut venv_path = obj["venv"].as_str().unwrap_or("").to_string();
-
-        if !venv_path.is_empty() {
-            if let Some(stripped) = venv_path.strip_prefix('#') {
-                venv_path = format!("{}{}", self.inherit.current_dir, stripped);
-            }
-
-            if !Path::new(&venv_path).exists() {
-                return Err(self.bif_error("venv path does not exist"));
-            }
         }
 
         let schema_data = obj
@@ -124,22 +114,54 @@ impl<'a> Bif<'a> {
                     .unwrap_or(Value::Null)
             });
 
-        let result = PythonExecutor::exec_py(
-            &file_path_obj,
-            &obj["params"],
-            obj["callback"].as_str().unwrap_or(DEFAULT_OBJ_CALLBACK),
-            if obj.get("schema").and_then(|v| v.as_bool()).unwrap_or(false) {
-                Some(&self.shared.schema)
-            } else {
-                None
-            },
-            schema_data.as_ref(),
-            if venv_path.is_empty() {
-                None
-            } else {
-                Some(venv_path.as_str())
-            },
-        )?;
+        let schema = if obj.get("schema").and_then(|v| v.as_bool()).unwrap_or(false) {
+            Some(&self.shared.schema)
+        } else {
+            None
+        };
+
+        let result = if engine == "python" {
+            let mut venv_path = obj["venv"].as_str().unwrap_or("").to_string();
+
+            if !venv_path.is_empty() {
+                if let Some(stripped) = venv_path.strip_prefix('#') {
+                    venv_path = format!("{}{}", self.inherit.current_dir, stripped);
+                }
+
+                if !Path::new(&venv_path).exists() {
+                    return Err(self.bif_error("venv path does not exist"));
+                }
+            }
+
+            PythonExecutor::exec_py(
+                &file_path_obj,
+                &obj["params"],
+                obj["callback"].as_str().unwrap_or(DEFAULT_OBJ_CALLBACK),
+                schema,
+                schema_data.as_ref(),
+                if venv_path.is_empty() {
+                    None
+                } else {
+                    Some(venv_path.as_str())
+                },
+            )
+            .map_err(|e| self.bif_error(&e.msg))?
+        } else {
+            let mut fpm_endpoint = obj["fpm"].as_str().unwrap_or(DEFAULT_OBJ_FPM).to_string();
+            if let Some(stripped) = fpm_endpoint.strip_prefix('#') {
+                fpm_endpoint = format!("{}{}", self.inherit.current_dir, stripped);
+            }
+
+            PhpExecutor::exec_php(
+                &file_path_obj,
+                &obj["params"],
+                obj["callback"].as_str().unwrap_or(DEFAULT_OBJ_CALLBACK),
+                schema,
+                schema_data.as_ref(),
+                &fpm_endpoint,
+            )
+            .map_err(|e| self.bif_error(&e.msg))?
+        };
 
         let mut code = String::new();
         if !is_empty_key(&result, "data") {
@@ -164,7 +186,12 @@ impl<'a> Bif<'a> {
     fn parse_obj_values(&mut self, value: &mut Value, is_recursive_call: bool) {
         if let Value::Object(map) = value {
             for (key, val) in map.iter_mut() {
-                if key == "file" || key == "template" || key == "venv" || key == "schema_data" {
+                if key == "file"
+                    || key == "template"
+                    || key == "venv"
+                    || key == "schema_data"
+                    || key == "fpm"
+                {
                     if let Value::String(s) = val {
                         if s.contains(BIF_OPEN) {
                             *val = Value::String(new_child_parse!(self, s, false));

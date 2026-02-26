@@ -1,6 +1,6 @@
+use crate::utils::{get_from_key, is_bool_key};
 use serde_json::Value;
 use std::env;
-use crate::utils::{get_from_key, is_bool_key};
 
 pub(crate) struct Shared {
     pub(crate) schema: Value,
@@ -38,14 +38,14 @@ impl Shared {
         let filter_all = is_bool_key(&schema["config"], "filter_all");
         let cache_prefix = get_from_key(&schema["config"], "cache_prefix");
         let mut cache_dir = get_from_key(&schema["config"], "cache_dir");
-        let working_dir   = env::current_dir().unwrap().to_string_lossy().into_owned();
-        let cache_on_post= is_bool_key(&schema["config"], "cache_on_post");
-        let cache_on_get= is_bool_key(&schema["config"], "cache_on_get");
-        let cache_on_cookies= is_bool_key(&schema["config"], "cache_on_cookies");
-        let cache_disable= is_bool_key(&schema["config"], "cache_disable");
-        let disable_js= is_bool_key(&schema["config"], "disable_js");
+        let working_dir = env::current_dir().unwrap().to_string_lossy().into_owned();
+        let cache_on_post = is_bool_key(&schema["config"], "cache_on_post");
+        let cache_on_get = is_bool_key(&schema["config"], "cache_on_get");
+        let cache_on_cookies = is_bool_key(&schema["config"], "cache_on_cookies");
+        let cache_disable = is_bool_key(&schema["config"], "cache_disable");
+        let disable_js = is_bool_key(&schema["config"], "disable_js");
         let debug_expire = schema["config"]["debug_expire"].as_u64().unwrap();
-        let debug_file= get_from_key(&schema["config"], "debug_file");
+        let debug_file = get_from_key(&schema["config"], "debug_file");
         let mut filter_bifs = false;
 
         if !cache_disable {

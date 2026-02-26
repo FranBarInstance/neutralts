@@ -271,9 +271,8 @@ mod tests {
             }
         };
         template.merge_schema_str(SCHEMA).unwrap();
-        template.set_src_str(
-            "<div>{:redirect; 301 >> https://example.com/?{:;__test-nts:} :}/div>",
-        );
+        template
+            .set_src_str("<div>{:redirect; 301 >> https://example.com/?{:;__test-nts:} :}/div>");
         let result = template.render();
         assert!(!template.has_error());
         assert_eq!(template.get_status_code(), "301");
@@ -281,5 +280,4 @@ mod tests {
         assert_eq!(template.get_status_param(), "https://example.com/?nts");
         assert_eq!(result, "301 Moved Permanently\nhttps://example.com/?nts");
     }
-
 }

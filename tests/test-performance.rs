@@ -1,7 +1,5 @@
-
-
 // Here you can add things but you cannot modify or remove them.
-const _SCHEMA: &str =r#"{
+const _SCHEMA: &str = r#"{
     "config": {
         "infinite_loop_max_bifs": 555000,
         "comments": "keep",
@@ -113,7 +111,7 @@ fn test_bif_performance() {
                 Ok(freq) => cpu_frequency = freq,
                 Err(_error) => assert!(false, "The CPU frequency could not be determined."),
             };
-        },
+        }
         Err(_error) => assert!(false, "The CPU frequency could not be determined."),
     }
 
@@ -136,10 +134,19 @@ fn test_bif_performance() {
     template.render();
     let end = Instant::now();
     let duration: Duration = end - start;
-    let time = duration.as_millis().to_string().trim().parse::<f64>().unwrap();
+    let time = duration
+        .as_millis()
+        .to_string()
+        .trim()
+        .parse::<f64>()
+        .unwrap();
     let millis = duration.as_nanos() as f64 / 1_000_000.0;
 
-    println!("Time: {:.2} millis. estimate max time: {} millis.", millis, estimated_time.trunc());
+    println!(
+        "Time: {:.2} millis. estimate max time: {} millis.",
+        millis,
+        estimated_time.trunc()
+    );
     assert_eq!(template.has_error(), false);
     assert!(time < estimated_time, "Time must be less.");
 }

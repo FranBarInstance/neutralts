@@ -1,17 +1,13 @@
+use crate::{
+    block_parser::BlockInherit, block_parser::BlockParser, constants::*, default_json::*,
+    shared::Shared, utils::*,
+};
+use regex::Regex;
+use serde_json::{json, Value};
 use std::fs;
 use std::path::Path;
 use std::sync::OnceLock;
 use std::time::{Duration, Instant};
-use serde_json::{json, Value};
-use regex::Regex;
-use crate::{
-    constants::*,
-    default_json::*,
-    utils::*,
-    shared::Shared,
-    block_parser::BlockParser,
-    block_parser::BlockInherit
-};
 
 pub struct Template<'a> {
     raw: String,

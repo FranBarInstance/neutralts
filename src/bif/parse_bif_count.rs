@@ -6,12 +6,7 @@
     '------------'
 */
 
-use crate::{
-    constants::*,
-    bif::Bif,
-    bif::BifError,
-    bif::constants::*,
-};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*};
 
 impl<'a> Bif<'a> {
     /*

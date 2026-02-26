@@ -1,5 +1,4 @@
-
-pub const DEFAULT: &str =r#"{
+pub const DEFAULT: &str = r#"{
     "_comment_:License": "License in the terms described in the LICENSE file.",
     "version": "0.0.0",
     "config": {

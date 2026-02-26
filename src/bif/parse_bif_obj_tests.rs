@@ -10,11 +10,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let path = format!(
-            "tests/__obj_schema_data_{}_{}.py",
-            process::id(),
-            nanos
-        );
+        let path = format!("tests/__obj_schema_data_{}_{}.py", process::id(), nanos);
         let script = r#"def main(params=None):
     data = globals().get('__NEUTRAL_SCHEMA_DATA__', None)
     if data is None:
@@ -220,6 +216,26 @@ mod tests {
     }
 
     #[test]
+    fn test_bif_obj_php_invalid_fpm_endpoint() {
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(
+            "<div>{:obj; {\"engine\":\"php\",\"file\":\"tests/script.py\",\"fpm\":\"bad-endpoint\"} >> :}</div>",
+        );
+        let result = template.render();
+        assert!(template.has_error());
+        assert_eq!(result, "<div></div>");
+    }
+
+    #[test]
     fn test_bif_obj_schema_false() {
         let mut template = match crate::Template::new() {
             Ok(tpl) => tpl,
@@ -370,6 +386,31 @@ mod tests {
     }
 
     #[test]
+    fn test_bif_obj_schema_data_nested_global_scalar() {
+        let script_path = create_schema_data_test_script();
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                remove_test_script(&script_path);
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:obj; {{\"file\":\"{}\",\"schema_data\":\"__test-obj-nts->level1-obj->level2-obj->level2\"}} >> {{:;local::schema_data_kind:}}|{{:;local::schema_data_scalar:}} :}}</div>",
+            script_path
+        ));
+        let result = template.render();
+        remove_test_script(&script_path);
+
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>scalar|Ok</div>");
+    }
+
+    #[test]
     fn test_bif_obj_schema_data_dict_local() {
         let script_path = create_schema_data_test_script();
         let mut template = match crate::Template::new() {
@@ -392,6 +433,31 @@ mod tests {
 
         assert!(!template.has_error());
         assert_eq!(result, "<div>dict</div>");
+    }
+
+    #[test]
+    fn test_bif_obj_schema_data_nested_local_scalar() {
+        let script_path = create_schema_data_test_script();
+        let mut template = match crate::Template::new() {
+            Ok(tpl) => tpl,
+            Err(error) => {
+                remove_test_script(&script_path);
+                println!("Error creating Template: {}", error);
+                assert!(false);
+                return;
+            }
+        };
+
+        template.merge_schema_str(SCHEMA).unwrap();
+        template.set_src_str(&format!(
+            "<div>{{:data; tests/local-data.json :}}{{:obj; {{\"file\":\"{}\",\"schema_data\":\"local::nested-obj->Lorem->Ipsum->Dolor->Sit->Amet\"}} >> {{:;local::schema_data_kind:}}|{{:;local::schema_data_scalar:}} :}}</div>",
+            script_path
+        ));
+        let result = template.render();
+        remove_test_script(&script_path);
+
+        assert!(!template.has_error());
+        assert_eq!(result, "<div>scalar|Consectetur adipiscing elit.</div>");
     }
 
     #[test]

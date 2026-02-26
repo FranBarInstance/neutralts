@@ -1,8 +1,7 @@
-
 use neutralts::constants::*;
 use neutralts::utils::*;
-use serde_json::Value;
 use serde_json::json;
+use serde_json::Value;
 
 const HTML_SOURCE: &str = r#"<!DOCTYPE html>
 <html lang="{:lang;:}">
@@ -192,7 +191,6 @@ fn test_is_empty_key() {
     assert!(is_empty_key(&schema, "non_existent_key"));
 }
 
-
 #[test]
 fn test_is_bool_key() {
     let schema = json!({
@@ -367,7 +365,6 @@ fn test_wildcard_match() {
     // Special character '~' matches empty string
     assert!(wildcard_match("", "~"));
 }
-
 
 #[test]
 fn test_find_tag_position() {

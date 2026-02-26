@@ -1,4 +1,3 @@
-
 // requires "preserve_order": serde_json = { version = "1.0", features = ["preserve_order"] }
 
 // Here you can add things but you cannot modify or remove them.
@@ -140,7 +139,10 @@ fn test_bif_inject_cache_true_neutral() {
     template.set_src_str("<div>{:neutral; {:;inject:} >> {:;inject:} :}</div>");
     let result = template.render_once();
     assert!(!template.has_error());
-    assert_eq!(result, "<div>{:neutral; {:;inject:} >> {:;inject:} :}</div>");
+    assert_eq!(
+        result,
+        "<div>{:neutral; {:;inject:} >> {:;inject:} :}</div>"
+    );
 }
 
 #[test]
@@ -244,7 +246,6 @@ fn test_bif_inject_cache_true_bool_negate() {
     assert!(!template.has_error());
     assert_eq!(result, "<div></div>");
 }
-
 
 #[test]
 fn test_bif_inject_cache_true_coalesce() {
@@ -515,7 +516,10 @@ fn test_bif_inject_cache_true_each() {
     template.set_src_str("<div>{:each; __test-arr-nts k v >> {:;inject:} :}</div>");
     let result = template.render_once();
     assert!(!template.has_error());
-    assert_eq!(result, "<div>{:exit; 403 :}{:exit; 403 :}{:exit; 403 :}</div>");
+    assert_eq!(
+        result,
+        "<div>{:exit; 403 :}{:exit; 403 :}{:exit; 403 :}</div>"
+    );
 }
 
 #[test]
@@ -529,7 +533,8 @@ fn test_bif_inject_cache_true_each_eval() {
         }
     };
     template.merge_schema_str(SCHEMA).unwrap();
-    template.set_src_str("<div>{:each; {:;inject:} {:;inject:} {:;inject:} >> {:;inject:} :}</div>");
+    template
+        .set_src_str("<div>{:each; {:;inject:} {:;inject:} {:;inject:} >> {:;inject:} :}</div>");
     let result = template.render_once();
     assert!(!template.has_error());
     assert_eq!(result, "<div></div>");
@@ -583,7 +588,10 @@ fn test_bif_inject_cache_true_for() {
     template.set_src_str("<div>{:for; n 1..3 >> {:;inject:} :}</div>");
     let result = template.render_once();
     assert!(!template.has_error());
-    assert_eq!(result, "<div>{:exit; 403 :}{:exit; 403 :}{:exit; 403 :}</div>");
+    assert_eq!(
+        result,
+        "<div>{:exit; 403 :}{:exit; 403 :}{:exit; 403 :}</div>"
+    );
 }
 
 #[test]
@@ -784,7 +792,9 @@ fn test_bif_inject_cache_true_param() {
         }
     };
     template.merge_schema_str(SCHEMA).unwrap();
-    template.set_src_str("<div>{:code; {:param; {:;inject:} >> {:;inject:} :} {:param; {:;inject:} :} :}</div>");
+    template.set_src_str(
+        "<div>{:code; {:param; {:;inject:} >> {:;inject:} :} {:param; {:;inject:} :} :}</div>",
+    );
     let result = template.render_once();
     assert!(!template.has_error());
     assert_eq!(result, "<div>{:exit; 403 :}</div>");
@@ -925,7 +935,6 @@ fn test_bif_inject_cache_true_trans_negate() {
     assert!(!template.has_error());
     assert_eq!(result, "<div></div>");
 }
-
 
 #[test]
 fn test_bif_inject_cache_true_join() {

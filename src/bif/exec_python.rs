@@ -3,8 +3,8 @@
 use crate::{bif::BifError, Value};
 use pyo3::prelude::*;
 use pyo3::types::{PyList, PyModule};
-use std::path::Path;
 use std::env;
+use std::path::Path;
 use std::process::Command;
 
 pub struct PythonExecutor;

@@ -360,5 +360,4 @@ mod tests {
         assert_eq!(template.get_status_param(), "/home?nts");
         assert_eq!(result, "301 Moved Permanently\n/home?nts");
     }
-
 }

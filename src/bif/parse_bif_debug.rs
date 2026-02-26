@@ -1,15 +1,9 @@
 #![doc = include_str!("../../doc/bif-debug.md")]
 
-use crate::{
-    bif::constants::*,
-    bif::Bif,
-    bif::BifError,
-    constants::*,
-    utils::*,
-};
+use crate::{bif::constants::*, bif::Bif, bif::BifError, constants::*, utils::*};
 use std::fs;
 use std::path::Path;
-use std::time::{SystemTime, Duration};
+use std::time::{Duration, SystemTime};
 
 impl<'a> Bif<'a> {
     /*
@@ -37,7 +31,9 @@ impl<'a> Bif<'a> {
             if self.mod_negate {
                 return Ok(());
             } else {
-                return Err(self.bif_error("Debug is disabled. Remember to remove the bif debug in production."));
+                return Err(self.bif_error(
+                    "Debug is disabled. Remember to remove the bif debug in production.",
+                ));
             }
         }
 
@@ -106,7 +102,6 @@ impl<'a> Bif<'a> {
         }
     }
 }
-
 
 #[cfg(test)]
 #[path = "parse_bif_debug_tests.rs"]

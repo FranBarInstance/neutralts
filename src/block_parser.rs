@@ -1,11 +1,5 @@
+use crate::{bif::Bif, constants::*, shared::Shared, utils::extract_blocks, utils::*};
 use serde_json::json;
-use crate::{
-    constants::*,
-    utils::*,
-    shared::Shared,
-    bif::Bif,
-    utils::extract_blocks
-};
 
 pub(crate) struct BlockInherit {
     pub(crate) indir: String,
@@ -91,7 +85,6 @@ impl BlockInherit {
     }
 }
 
-
 pub(crate) struct BlockParser<'a> {
     shared: &'a mut Shared,
     inherit: BlockInherit,
@@ -105,7 +98,9 @@ impl Drop for BlockParser<'_> {
 
         // The first main block cannot be deleted
         if block_id != "block_1" {
-            if block_id == self.inherit.indir && is_defined_key(&self.shared.schema["__indir"], &block_id) {
+            if block_id == self.inherit.indir
+                && is_defined_key(&self.shared.schema["__indir"], &block_id)
+            {
                 self.shared.schema["__indir"][&block_id] = json!({});
             }
         }
@@ -176,8 +171,12 @@ impl<'a> BlockParser<'a> {
             }
 
             if !is_comment && !is_short_circuit_coalesce {
-                let mut bif =
-                    Bif::new(&raw_source[start..end], self.shared, &mut self.inherit, only);
+                let mut bif = Bif::new(
+                    &raw_source[start..end],
+                    self.shared,
+                    &mut self.inherit,
+                    only,
+                );
                 out += &bif.parse();
             }
 

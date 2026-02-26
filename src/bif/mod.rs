@@ -1,13 +1,7 @@
 //
 
+use crate::{block_parser::BlockInherit, constants::*, json, shared::Shared, utils::*, Value};
 use chrono::Local;
-use crate::{
-    json, Value,
-    block_parser::BlockInherit,
-    constants::*,
-    shared::Shared,
-    utils::*,
-};
 
 mod constants;
 mod parse_bif_allow;
@@ -20,6 +14,7 @@ mod parse_bif_contains;
 mod parse_bif_count;
 mod parse_bif_data;
 mod parse_bif_date;
+mod parse_bif_debug;
 mod parse_bif_declare;
 mod parse_bif_defined;
 mod parse_bif_each;
@@ -37,6 +32,7 @@ mod parse_bif_lang;
 mod parse_bif_locale;
 mod parse_bif_moveto;
 mod parse_bif_neutral;
+mod parse_bif_obj;
 mod parse_bif_param;
 mod parse_bif_rand;
 mod parse_bif_redirect;
@@ -47,10 +43,10 @@ mod parse_bif_sum;
 mod parse_bif_trans;
 mod parse_bif_unknown;
 mod parse_bif_var;
-mod parse_bif_obj;
-mod parse_bif_debug;
 
+mod exec_php;
 mod exec_python;
+pub use exec_php::PhpExecutor;
 pub use exec_python::PythonExecutor;
 
 pub(crate) struct BifError {
@@ -216,11 +212,7 @@ impl<'a> Bif<'a> {
 
                 let error_line = format!(
                     "[{}] Error ({}) {} file~: ({}) src: {}",
-                    datetime,
-                    e.name,
-                    e.msg,
-                    e.file,
-                    e.src
+                    datetime, e.name, e.msg, e.file, e.src
                 );
 
                 let error_line = error_line.replace(['\n', '\r'], " ");
@@ -435,5 +427,4 @@ impl<'a> Bif<'a> {
             src: self.raw.to_string(),
         }
     }
-
 }

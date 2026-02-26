@@ -1,10 +1,9 @@
-use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 use std::env;
 
 /// neutralts version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-
 
 ///  Bif delimiters
 ///
@@ -222,42 +221,10 @@ pub const SNIPPETS_FILES: &str = "snippet";
 
 /// bif list
 pub const BIF_LIST: [&str; 36] = [
-    "",
-    "allow",
-    "array",
-    "bool",
-    "cache",
-    "coalesce",
-    "code",
-    "contains",
-    "count",
-    "data",
-    "date",
-    "declare",
-    "defined",
-    "each",
-    "else",
-    "eval",
-    "exit",
-    "fetch",
-    "filled",
-    "flg",
-    "for",
-    "hash",
-    "include",
-    "join",
-    "lang",
-    "locale",
-    "moveto",
-    "neutral",
-    "param",
-    "rand",
-    "redirect",
-    "replace",
-    "same",
-    "snippet",
-    "sum",
-    "trans",
+    "", "allow", "array", "bool", "cache", "coalesce", "code", "contains", "count", "data", "date",
+    "declare", "defined", "each", "else", "eval", "exit", "fetch", "filled", "flg", "for", "hash",
+    "include", "join", "lang", "locale", "moveto", "neutral", "param", "rand", "redirect",
+    "replace", "same", "snippet", "sum", "trans",
 ];
 
 /// bif alias list because some bifs have no name
@@ -369,10 +336,12 @@ lazy_static! {
 }
 
 /// JavaScript script reloads the current top page, used in {:redirect;
-pub const REDIR_JS_RELOAD_TOP: &str = "<!DOCTYPE html><script>top.location.href=self.location.href.split('#')[0];</script>";
+pub const REDIR_JS_RELOAD_TOP: &str =
+    "<!DOCTYPE html><script>top.location.href=self.location.href.split('#')[0];</script>";
 
 /// JavaScript script reloads the current, used in {:redirect;
-pub const REDIR_JS_RELOAD_SELF: &str = "<!DOCTYPE html><script>self.location.href=self.location.href.split('#')[0]</script>";
+pub const REDIR_JS_RELOAD_SELF: &str =
+    "<!DOCTYPE html><script>self.location.href=self.location.href.split('#')[0]</script>";
 
 /// JavaScript script that redirects to a new URL in the top page, used in {:redirect;
 /// The placeholder '{}' should be replaced with the destination url.
@@ -555,3 +524,4 @@ pub const DIV_FETCH_CLICK: &str = r#"
 
 pub const DEFAULT_OBJ_ENGINE: &str = "python";
 pub const DEFAULT_OBJ_CALLBACK: &str = "main";
+pub const DEFAULT_OBJ_FPM: &str = "unix:/run/php/php-fpm.sock";

@@ -1,5 +1,5 @@
-use serde_json::Value;
 use crate::constants::*;
+use serde_json::Value;
 use std::borrow::Cow;
 
 /// Merges two JSON schemas represented as `serde_json::Value`.
@@ -252,8 +252,6 @@ pub fn extract_blocks(raw_source: &str) -> Result<Vec<(usize, usize)>, usize> {
     Ok(blocks)
 }
 
-
-
 /// Removes a prefix and suffix from a string slice.
 ///
 /// # Arguments
@@ -409,7 +407,8 @@ pub(crate) fn resolve_pointer<'a>(schema: &'a Value, key: &str) -> Option<&'a Va
     let mut i = 0;
     while i < len {
         let is_slash = bytes[i] == b'/';
-        let is_arrow = !is_slash && i + delim_len <= len && &bytes[i..i + delim_len] == bif_array_bytes;
+        let is_arrow =
+            !is_slash && i + delim_len <= len && &bytes[i..i + delim_len] == bif_array_bytes;
 
         if is_slash || is_arrow {
             let part = &key[start..i];
@@ -519,12 +518,15 @@ pub fn remove_comments(raw_source: &str) -> String {
                 break;
             }
 
-            if bytes[curr_pos - 1] == BIF_OPEN0 && bytes[curr_pos + 1] == BIF_COMMENT_B  {
+            if bytes[curr_pos - 1] == BIF_OPEN0 && bytes[curr_pos + 1] == BIF_COMMENT_B {
                 nested_comment += 1;
                 curr_pos += 1;
                 continue;
             }
-            if nested_comment > 0 && bytes[curr_pos + 1] == BIF_CLOSE1 && bytes[curr_pos - 1] == BIF_COMMENT_B {
+            if nested_comment > 0
+                && bytes[curr_pos + 1] == BIF_CLOSE1
+                && bytes[curr_pos - 1] == BIF_COMMENT_B
+            {
                 nested_comment -= 1;
                 curr_pos += 1;
                 continue;
@@ -537,7 +539,6 @@ pub fn remove_comments(raw_source: &str) -> String {
                 curr_pos += 1;
             }
         }
-
     }
 
     let mut prev_end = 0;
@@ -580,20 +581,19 @@ pub fn wildcard_match(text: &str, pattern: &str) -> bool {
                     return false;
                 }
                 let escaped_char = rest_pattern.first().unwrap();
-                match_recursive(&text[1..], &rest_pattern[1..]) && *text.first().unwrap() == *escaped_char
+                match_recursive(&text[1..], &rest_pattern[1..])
+                    && *text.first().unwrap() == *escaped_char
             }
             '.' => {
-                match_recursive(text, rest_pattern) || (!text.is_empty() && match_recursive(&text[1..], rest_pattern))
+                match_recursive(text, rest_pattern)
+                    || (!text.is_empty() && match_recursive(&text[1..], rest_pattern))
             }
-            '?' => {
-                !text.is_empty() && match_recursive(&text[1..], rest_pattern)
-            }
+            '?' => !text.is_empty() && match_recursive(&text[1..], rest_pattern),
             '*' => {
-                match_recursive(text, rest_pattern) || (!text.is_empty() && match_recursive(&text[1..], pattern))
+                match_recursive(text, rest_pattern)
+                    || (!text.is_empty() && match_recursive(&text[1..], pattern))
             }
-            '~' => {
-                text.is_empty()
-            },
+            '~' => text.is_empty(),
             _ => {
                 if text.is_empty() || first_char != *text.first().unwrap() {
                     false
@@ -606,7 +606,6 @@ pub fn wildcard_match(text: &str, pattern: &str) -> bool {
 
     match_recursive(&text_chars, &pattern_chars)
 }
-
 
 /// Finds the position of a tag in the text.
 ///
@@ -815,13 +814,17 @@ pub fn filter_value(value: &mut Value) {
             if let Cow::Owned(new_s) = processed {
                 *s = new_s;
             }
-        },
-        Value::Object(obj) => for v in obj.values_mut() {
-            filter_value(v);
-        },
-        Value::Array(arr) => for item in arr.iter_mut() {
-            filter_value(item);
-        },
+        }
+        Value::Object(obj) => {
+            for v in obj.values_mut() {
+                filter_value(v);
+            }
+        }
+        Value::Array(arr) => {
+            for item in arr.iter_mut() {
+                filter_value(item);
+            }
+        }
         _ => {}
     }
 }
@@ -837,7 +840,9 @@ pub fn filter_value_keys(value: &mut Value) {
         Value::Object(obj) => {
             // Check if any key needs escaping
             let needs_change = obj.keys().any(|k| {
-                k.contains('&') || k.chars().any(|c| matches!(c, '&' | '<' | '>' | '"' | '\'' | '/' | '{' | '}'))
+                k.contains('&')
+                    || k.chars()
+                        .any(|c| matches!(c, '&' | '<' | '>' | '"' | '\'' | '/' | '{' | '}'))
             });
 
             if !needs_change {

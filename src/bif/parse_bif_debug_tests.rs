@@ -51,7 +51,8 @@ mod tests {
                 return;
             }
         };
-        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-A").expect("Failed to create debug file for test");
+        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-A")
+            .expect("Failed to create debug file for test");
         template.merge_schema_str(SCHEMA).unwrap();
         template.merge_schema_str(schema).unwrap();
         template.set_src_str("<div>{:debug; data->test_debug :}</div>");
@@ -83,13 +84,17 @@ mod tests {
                 return;
             }
         };
-        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-A").expect("Failed to create debug file for test");
+        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-A")
+            .expect("Failed to create debug file for test");
         template.merge_schema_str(SCHEMA).unwrap();
         template.merge_schema_str(schema).unwrap();
         template.set_src_str("<div>{:&debug; data->code :}</div>");
         let result = template.render();
         assert!(!template.has_error());
-        assert_eq!(result, "<div>&quot;&lt;div&gt;&#123;:;test_debug:&#125;&lt;&#x2F;div&gt;&quot;</div>");
+        assert_eq!(
+            result,
+            "<div>&quot;&lt;div&gt;&#123;:;test_debug:&#125;&lt;&#x2F;div&gt;&quot;</div>"
+        );
     }
 
     #[test]
@@ -115,7 +120,8 @@ mod tests {
                 return;
             }
         };
-        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-A").expect("Failed to create debug file for test");
+        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-A")
+            .expect("Failed to create debug file for test");
         template.merge_schema_str(SCHEMA).unwrap();
         template.merge_schema_str(schema).unwrap();
         template.set_src_str("<div>{:debug; data->code :}</div>");
@@ -146,7 +152,8 @@ mod tests {
                 return;
             }
         };
-        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-B").expect("Failed to create debug file for test");
+        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-B")
+            .expect("Failed to create debug file for test");
         template.merge_schema_str(SCHEMA).unwrap();
         template.merge_schema_str(schema).unwrap();
         template.set_src_str("<div>{:debug; data->test_debug :}</div>");
@@ -177,7 +184,8 @@ mod tests {
                 return;
             }
         };
-        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-B").expect("Failed to create debug file for test");
+        fs::File::create("/tmp/enable-neutral-debug-8ndmdj76gals33-B")
+            .expect("Failed to create debug file for test");
         template.merge_schema_str(SCHEMA).unwrap();
         template.merge_schema_str(schema).unwrap();
         template.set_src_str("<div>{:!debug; data->test_debug :}</div>");
@@ -214,5 +222,4 @@ mod tests {
         assert!(!template.has_error());
         assert_eq!(result, "<div></div>");
     }
-
 }

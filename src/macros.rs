@@ -1,4 +1,3 @@
-
 // Inherit, macro: new_child_parse
 // -------------------------------
 // Inheritance is implemented with this macro. It is also used for the inheritance

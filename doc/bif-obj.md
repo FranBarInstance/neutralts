@@ -2,7 +2,7 @@
 =============
 **This feature is experimental.**
 
-Executes a external script (currently only Python) and processes its output. The script receives parameters and can access the template schema.
+Executes an external script (Python or PHP via PHP-FPM) and processes its output. The script receives parameters and can access the template schema.
 
 JSON obj file
 ```html
@@ -14,7 +14,7 @@ JSON obj inline:
 ```html
 {:obj;
     {
-        "engine": "Python",
+        "engine": "python",
         "file": "script.py",
         "params": {},
         "callback": "main",
@@ -28,7 +28,7 @@ JSON obj template inline:
 ```html
 {:obj;
     {
-        "engine": "Python",
+        "engine": "python",
         "file": "script.py",
         "params": {},
         "callback": "main"
@@ -44,18 +44,19 @@ Example Object:
 
 ```json
 {
-    "engine": "Python",          // Optional, default "Python"
+    "engine": "python",          // Optional, "python" (default) or "php"
     "file": "script.py",         // Required, path to script
     "schema": false,             // Optional, default false
     "schema_data": "__test-nts", // Optional, default none
     "venv": "/path/to/.env",     // Optional, default none
+    "fpm": "unix:/run/php/php-fpm.sock", // Optional for PHP, default shown
     "params": {},                // Optional, parameters passed to the script
     "callback": "main",          // Optional, default "main"
     "template": "template.ntpl"  // Optional, template to process the result
 }
 ```
 
-The keys "file", "params", "venv", "template" and "schema_data" accept variables `{:;varname:}`
+The keys "file", "params", "venv", "fpm", "template" and "schema_data" accept variables `{:;varname:}`
 
 Example Script:
 
@@ -82,6 +83,30 @@ def main(params=None):
   - `"schema_data": "local::varname->key->..."`
 
 If the key does not exist, `__NEUTRAL_SCHEMA_DATA__` is `None`.
+
+PHP script example (via PHP-FPM):
+
+```php
+<?php
+function main($params = []) {
+    $schema = $GLOBALS['__NEUTRAL_SCHEMA__'] ?? null;
+    $schema_data = $GLOBALS['__NEUTRAL_SCHEMA_DATA__'] ?? null;
+    return [
+        "data" => [
+            "varname" => "Hello from PHP!"
+        ]
+    ];
+}
+```
+
+For PHP:
+
+- `"engine": "php"`
+- `"fpm"` can be:
+  - `"unix:/run/php/php-fpm.sock"`
+  - `"tcp://127.0.0.1:9000"`
+  - `"127.0.0.1:9000"`
+- If `"fpm"` is not set, default is `"unix:/run/php/php-fpm.sock"`.
 
 It must return a dictionary where the variables are set in the format:
 
@@ -162,6 +187,20 @@ Inline configuration with parameters:
 :}
 ```
 
+PHP-FPM usage:
+```html
+{:obj;
+    {
+        "engine": "php",
+        "file": "scripts/hello.php",
+        "fpm": "unix:/run/php/php-fpm.sock",
+        "params": {
+            "name": "World"
+        }
+    }
+:}
+```
+
 Using `schema_data`:
 ```html
 {:obj;
@@ -186,6 +225,23 @@ Using `schema_data`:
 :}
 ```
 
+Nested path examples:
+```html
+{:obj;
+    {
+        "file": "scripts/data.py",
+        "schema_data": "__test-obj-nts->level1-obj->level2-obj->level2"
+    }
+:}
+
+{:obj;
+    {
+        "file": "scripts/data.py",
+        "schema_data": "local::nested-obj->Lorem->Ipsum->Dolor->Sit->Amet"
+    }
+:}
+```
+
 Using template with script output:
 ```html
 {:obj;
@@ -200,6 +256,8 @@ Limitations
 ------------
 
 Python is slow and executing Python as a subprocess is even slower, use "{:cache;" when possible.
+
+PHP via FPM adds network/socket overhead per call, use "{:cache;" when possible.
 
 It is not the same to use "obj" to replace multiple variables than to, for example, create a complete form, in the first case performance will be affected until it is unacceptable, in the second case the loss is likely not noticeable.
 

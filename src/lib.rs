@@ -1,6 +1,5 @@
 #![doc = include_str!("../README.md")]
 
-
 //  Built-in function layout
 //
 //  .-------------------------------------------------------------> open bif
@@ -60,25 +59,24 @@
 //         │       end render       │
 //          ·----------------------·
 
-
 pub use serde_json::{json, Value};
 
 #[macro_use]
 mod macros;
 
+mod bif;
+mod block_parser;
 pub mod constants;
-pub mod doc;
-pub mod utils;
 mod default_json;
+pub mod doc;
 mod shared;
 mod template;
-mod block_parser;
-mod bif;
+pub mod utils;
 
-pub use template::Template;
 pub use constants::*;
-pub use utils::*;
 pub use default_json::*;
+pub use template::Template;
+pub use utils::*;
 
 // for tests
 pub mod test_helpers;
