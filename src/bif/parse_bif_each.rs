@@ -45,8 +45,12 @@ impl<'a> Bif<'a> {
             }
         };
 
-        let restore_key = self.get_data(&key_name);
-        let restore_val = self.get_data(&val_name);
+        if key_name.starts_with("local::") || val_name.starts_with("local::") {
+            return Err(self.bif_error(BIF_ERROR_INSECURE_VARNAME));
+        }
+
+        let restore_key = self.shared.schema["data"][&key_name].clone();
+        let restore_val = self.shared.schema["data"][&val_name].clone();
 
         let data_storage = if array_name.starts_with("local::") {
             &self.shared.schema["__indir"][&self.inherit.indir]["data"]
@@ -81,8 +85,8 @@ impl<'a> Bif<'a> {
             _ => {}
         }
 
-        self.set_data(&key_name, &restore_key);
-        self.set_data(&val_name, &restore_val);
+        self.shared.schema["data"][&key_name] = restore_key;
+        self.shared.schema["data"][&val_name] = restore_val;
 
         Ok(())
     }
