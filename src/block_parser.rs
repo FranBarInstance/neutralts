@@ -1,5 +1,4 @@
-use crate::{bif::Bif, constants::*, shared::Shared, utils::extract_blocks, utils::*};
-use serde_json::json;
+use crate::{bif::Bif, constants::*, shared::Shared, utils::extract_blocks};
 use std::rc::Rc;
 
 pub(crate) struct BlockInherit {
