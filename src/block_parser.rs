@@ -1,5 +1,6 @@
 use crate::{bif::Bif, constants::*, shared::Shared, utils::extract_blocks, utils::*};
 use serde_json::json;
+use std::rc::Rc;
 
 pub(crate) struct BlockInherit {
     pub(crate) indir: String,
@@ -76,7 +77,10 @@ impl BlockInherit {
         // It can be called several times from the same level, in which case
         // it does not need to be cloned again.
         if prev_id != block_id {
-            shared.schema["__indir"][&block_id] = shared.schema["__indir"][&prev_id].clone();
+            if let Some(parent_rc) = shared.indir_store.get(&prev_id) {
+                let parent_rc = Rc::clone(parent_rc);
+                shared.indir_store.insert(block_id.clone(), parent_rc);
+            }
         }
 
         self.indir = block_id.clone();
@@ -98,10 +102,8 @@ impl Drop for BlockParser<'_> {
 
         // The first main block cannot be deleted
         if block_id != "block_1" {
-            if block_id == self.inherit.indir
-                && is_defined_key(&self.shared.schema["__indir"], &block_id)
-            {
-                self.shared.schema["__indir"][&block_id] = json!({});
+            if block_id == self.inherit.indir {
+                self.shared.indir_store.remove(&block_id);
             }
         }
     }
@@ -119,8 +121,10 @@ impl<'a> BlockParser<'a> {
     }
 
     pub(crate) fn update_indir(&mut self, indir: &String) {
-        self.shared.schema["__indir"][indir] =
-            self.shared.schema["__indir"][&self.inherit.indir].clone();
+        if let Some(child_rc) = self.shared.indir_store.get(&self.inherit.indir) {
+            let child_rc = Rc::clone(child_rc);
+            self.shared.indir_store.insert(indir.clone(), child_rc);
+        }
     }
 
     pub(crate) fn parse(&mut self, raw_source: &'a str, only: &str) -> String {

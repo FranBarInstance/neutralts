@@ -53,7 +53,7 @@ impl<'a> Bif<'a> {
         let restore_val = self.shared.schema["data"][&val_name].clone();
 
         let data_storage = if array_name.starts_with("local::") {
-            &self.shared.schema["__indir"][&self.inherit.indir]["data"]
+            &self.shared.get_indir(&self.inherit.indir)["data"]
         } else {
             &self.shared.schema["data"]
         };

@@ -1,9 +1,12 @@
 use crate::utils::{get_from_key, is_bool_key};
-use serde_json::Value;
+use serde_json::{json, Value};
+use std::collections::HashMap;
 use std::env;
+use std::rc::Rc;
 
 pub(crate) struct Shared {
     pub(crate) schema: Value,
+    pub(crate) indir_store: HashMap<String, Rc<Value>>,
     pub(crate) lang: String,
     pub(crate) comments: String,
     pub(crate) bisf_count: u64,
@@ -58,6 +61,7 @@ impl Shared {
 
         Shared {
             schema,
+            indir_store: HashMap::new(),
             lang,
             comments,
             bisf_count: 0,
@@ -83,5 +87,22 @@ impl Shared {
             debug_file,
             working_dir,
         }
+    }
+
+    /// Read - no clone
+    pub(crate) fn get_indir(&self, key: &str) -> &Value {
+        static EMPTY: Value = Value::Null;
+        self.indir_store
+            .get(key)
+            .map(|rc| rc.as_ref())
+            .unwrap_or(&EMPTY)
+    }
+
+    /// Write - clone-on-write
+    pub(crate) fn get_indir_mut(&mut self, key: &str) -> &mut Value {
+        let entry = self.indir_store
+            .entry(key.to_string())
+            .or_insert_with(|| Rc::new(json!({})));
+        Rc::make_mut(entry)
     }
 }

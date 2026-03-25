@@ -287,7 +287,7 @@ impl<'a> Bif<'a> {
         if name.starts_with("local::") {
             let local_name = name.strip_prefix("local::").unwrap_or(name);
             get_from_key(
-                &self.shared.schema["__indir"][&self.inherit.indir]["data"],
+                &self.shared.get_indir(&self.inherit.indir)["data"],
                 local_name,
             )
         } else {
@@ -326,7 +326,7 @@ impl<'a> Bif<'a> {
     // }
     pub(crate) fn get_trans(&self, text: &str) -> String {
         get_from_key(
-            &self.shared.schema["__indir"][&self.inherit.indir]["locale"]["trans"]
+            &self.shared.get_indir(&self.inherit.indir)["locale"]["trans"]
                 [&self.shared.lang],
             text,
         )

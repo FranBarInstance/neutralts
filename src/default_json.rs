@@ -110,6 +110,5 @@ pub const DEFAULT: &str = r#"{
         "params": {}
     },
     "__moveto": {},
-    "__indir": {},
     "__error": []
 }"#;

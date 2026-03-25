@@ -43,7 +43,7 @@ impl<'a> Bif<'a> {
         let mut key_name = self.code.clone();
         if key_name.starts_with("local::") {
             key_name = key_name.strip_prefix("local::").unwrap_or("").to_string();
-            schema = &self.shared.schema["__indir"][&self.inherit.indir];
+            schema = &self.shared.get_indir(&self.inherit.indir);
         }
 
         let k = if self.code.is_empty() {

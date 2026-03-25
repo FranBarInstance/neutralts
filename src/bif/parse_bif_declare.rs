@@ -23,7 +23,7 @@ impl<'a> Bif<'a> {
                 self.code = new_child_parse!(self, &self.code, false);
                 self.code = self.code.replace(UNPRINTABLE, "");
             }
-            self.shared.schema["__indir"][&self.inherit.indir]["declare"][&self.params] =
+            self.shared.get_indir_mut(&self.inherit.indir)["declare"][&self.params] =
                 json!(&self.code);
 
             self.out = EMPTY_STRING;

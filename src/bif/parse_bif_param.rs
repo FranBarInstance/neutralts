@@ -25,7 +25,7 @@ impl<'a> Bif<'a> {
                 }
 
                 self.inherit.create_block_schema(self.shared);
-                self.shared.schema["__indir"][&self.inherit.indir]["params"][&self.params] =
+                self.shared.get_indir_mut(&self.inherit.indir)["params"][&self.params] =
                     json!(&self.code);
                 self.out = EMPTY_STRING;
 
@@ -39,7 +39,7 @@ impl<'a> Bif<'a> {
             }
 
             self.code = get_from_key(
-                &self.shared.schema["__indir"][&self.inherit.indir]["params"],
+                &self.shared.get_indir(&self.inherit.indir)["params"],
                 &self.code,
             );
             self.out = self.code.to_string();

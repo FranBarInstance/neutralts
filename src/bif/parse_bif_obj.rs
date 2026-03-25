@@ -106,7 +106,7 @@ impl<'a> Bif<'a> {
             .map(|schema_data_name| {
                 let (schema_root, key_name) = if schema_data_name.starts_with("local::") {
                     (
-                        &self.shared.schema["__indir"][&self.inherit.indir]["data"],
+                        &self.shared.get_indir(&self.inherit.indir)["data"],
                         schema_data_name.strip_prefix("local::").unwrap_or(""),
                     )
                 } else {

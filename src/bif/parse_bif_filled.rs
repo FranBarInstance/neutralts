@@ -24,7 +24,7 @@ impl<'a> Bif<'a> {
         let mut schema = &self.shared.schema["data"];
 
         if varname.starts_with("local::") {
-            schema = &self.shared.schema["__indir"][&self.inherit.indir]["data"];
+            schema = &self.shared.get_indir(&self.inherit.indir)["data"];
             varname = varname.strip_prefix("local::").unwrap_or(varname);
         }
 

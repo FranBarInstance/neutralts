@@ -42,11 +42,11 @@ impl<'a> Bif<'a> {
                     // required regardless of mod_scope or static
                     self.inherit.create_block_schema(self.shared);
                 }
-                self.shared.schema["__indir"][&self.inherit.indir]["snippets"][&self.params] =
+                self.shared.get_indir_mut(&self.inherit.indir)["snippets"][&self.params] =
                     json!(&self.code);
 
                 // The directory inside the snippet is that of the template that created it.
-                self.shared.schema["__indir"][&self.inherit.indir]["snippets_set_dir"]
+                self.shared.get_indir_mut(&self.inherit.indir)["snippets_set_dir"]
                     [&self.params] = json!(&self.inherit.current_dir);
 
                 self.out = EMPTY_STRING;
@@ -63,14 +63,14 @@ impl<'a> Bif<'a> {
             let snip_name = self.code.clone();
 
             self.code = get_from_key(
-                &self.shared.schema["__indir"][&self.inherit.indir]["snippets"],
+                &self.shared.get_indir(&self.inherit.indir)["snippets"],
                 &self.code,
             );
 
             if self.code.contains(BIF_OPEN) {
                 // The directory inside the snippet is that of the template that created it.
                 let set_dir = get_from_key(
-                    &self.shared.schema["__indir"][&self.inherit.indir]["snippets_set_dir"],
+                    &self.shared.get_indir(&self.inherit.indir)["snippets_set_dir"],
                     &snip_name,
                 );
 

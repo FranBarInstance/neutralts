@@ -15,7 +15,7 @@ impl<'a> Bif<'a> {
         self.extract_params_code(true);
         let mut found = String::new();
         let words_string = get_from_key(
-            &self.shared.schema["__indir"][&self.inherit.indir]["declare"],
+            &self.shared.get_indir(&self.inherit.indir)["declare"],
             &self.params,
         );
 

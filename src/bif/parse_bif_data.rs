@@ -37,7 +37,7 @@ impl<'a> Bif<'a> {
                 .and_then(|obj| obj.remove("data"))
                 .unwrap_or(Value::Null);
             merge_schema_owned(
-                &mut self.shared.schema["__indir"][indir]["data"],
+                &mut self.shared.get_indir_mut(indir)["data"],
                 merge_data,
             );
 
@@ -100,7 +100,7 @@ impl<'a> Bif<'a> {
             .and_then(|obj| obj.remove("data"))
             .unwrap_or(Value::Null);
         merge_schema_owned(
-            &mut self.shared.schema["__indir"][indir]["data"],
+            &mut self.shared.get_indir_mut(indir)["data"],
             merge_data,
         );
 

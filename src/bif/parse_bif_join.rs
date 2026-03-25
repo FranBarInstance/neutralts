@@ -40,7 +40,7 @@ impl<'a> Bif<'a> {
         array_name = array_name.replace(BIF_ARRAY, "/");
         if array_name.starts_with("/local::") {
             array_name = array_name.replace("/local::", "/");
-            data_storage = &self.shared.schema["__indir"][&self.inherit.indir]["data"];
+            data_storage = &self.shared.get_indir(&self.inherit.indir)["data"];
         } else {
             data_storage = &self.shared.schema["data"];
         }

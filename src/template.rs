@@ -8,6 +8,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::OnceLock;
 use std::time::{Duration, Instant};
+use std::rc::Rc;
 
 pub struct Template<'a> {
     raw: String,
@@ -404,8 +405,8 @@ impl<'a> Template<'a> {
         let indir = inherit.create_block_schema(&mut self.shared);
         self.shared.schema["__moveto"] = json!({});
         self.shared.schema["__error"] = json!([]);
-        self.shared.schema["__indir"] = json!({});
-        self.shared.schema["__indir"][&indir] = self.shared.schema["inherit"].clone();
+        self.shared.indir_store.clear();
+        self.shared.indir_store.insert(indir, Rc::new(self.shared.schema["inherit"].clone()));
         inherit.current_file = self.file_path.to_string();
 
         // Escape CONTEXT values
@@ -447,8 +448,8 @@ impl<'a> Template<'a> {
         let indir = inherit.create_block_schema(&mut self.shared);
         self.shared.schema["__moveto"] = json!({});
         self.shared.schema["__error"] = json!([]);
-        self.shared.schema["__indir"] = json!({});
-        self.shared.schema["__indir"][&indir] = self.shared.schema["inherit"].clone();
+        self.shared.indir_store.clear();
+        self.shared.indir_store.insert(indir, Rc::new(self.shared.schema["inherit"].clone()));
         inherit.current_file = self.file_path.to_string();
 
         // Escape CONTEXT values
