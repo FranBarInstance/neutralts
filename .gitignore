@@ -9,3 +9,4 @@
 /helpers
 __pycache__/
 *.py[cod]
+.codex
